@@ -1,0 +1,15 @@
+Crear un servidor api que permita autorresponders node:
+
+- lista de suscriptores en diferentes categorias
+- crear emails en interfaz web en /autorresponders con email y contraseña únicos tipo phpmyadmin
+
+API
+
+- GET get-todos-suscriptores
+- GET get-suscriptores?categoria=x
+- POST create-autorresponder?lista=x
+- GET delete-autorresponder?id=x
+- POST add-suscriptor/:categoria
+
+Aparte script autorresponder.js que se ejecute con cronjobs para enviar los emails siguientes cada 10 - 20 minutos
+- enviar-autorresponder
