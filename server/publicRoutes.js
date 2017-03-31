@@ -1,95 +1,45 @@
 'use strict';
 
-const router = require('express').Router;
+const router = require('express').Router();
+const functions = require('./functions.js');
 
 /**
  * Things to note: 
  * ► This plugin is written totally in english
  * ► A message is also called an autorresponder
- * ► A category is a group of autorresponders with subscribers
- * ► Subscribers and autorresponders are stored inside categories
+ * ► Subscribers and autorresponders have categories
  * ► Removing a subscriber, category or autorresponder just moves it to a backup database
+ * ► There can be only 1 admin user that gets written in the secrets file the first time you start the app
+ * ► Update category subscribers categoryname and autorresponders categoryname when category name changes in /edit-category
  */
 
 /**
- * CRUD Autorresponders
- * {
- * 		id: 'id',
- * 		title: 'string',
- * 		content: 'string',
- * 		category: 'string',
- * 		created: 'date',
- * 		order: 'int' // The order in which send this autorresponder
- * }
+ * CRUD Categories
  */
 
-// Gets one autorresponder given an id
-router.get('/get-single-autorresponder/:id', (req, res) => {
-	const id = req.params.id;
+// Gets a single category given the categoryName with subscribers and get autorresponders
+router.get('/get-all-categories/', (req, res) => {
 	const response = {
 		err: null,
-		autorresponder: null
+		categories: []
 	};
 
-	functions.getSingleAutorresponder(id, (err, single) => {
+	functions.getAllCategories((err, categories) => {
 		if(err) response.err = err;
-		response.autorresponder = single;
+		response.categories = categories;
 		res.send(response);
 	});
 });
 
-// Adds an autorresponder to the category
-router.post('/add-autorresponder/:category', (req, res) => {
-	const category = req.params.category;
-	const autorresponder = req.body.data.autorresponder;
-	
-	functions.addAutorresponder(category, autorresponder, err => {
-		if(err) return res.send(err);
-		res.send(null);
-	});
-});
-
-// Changes an autorresponder given an id
-router.post('/edit-autorresponder/:id', (req, res) => {
-	const id = req.params.id;
-	const autorresponder = req.body.data.autorresponder;
-	
-	functions.editAutorresponder(id, autorresponder, err => {
-		if(err) return res.send(err);
-		res.send(null);
-	});
-});
-
-// Moves the autorresponder to the 'deletedAutorresponders' database for backup purposes instead of deleting it
-router.get('/remove-autorresponder/:id', (req, res) => {
-	const id = req.params.id;
-	
-	functions.deleteAutorresponder(id, err => {
-		if(err) return res.send(err);
-		res.send(null);
-	});
-});
-
-/**
- * CRUD Categories
- * {
- * 		id: 'id',
- * 		name: 'string',
- * 		created: 'date',
- * 		subscribers: [{}],
- * 		autorresponders: [{}]
- * }
- */
-
-// Gets a single category given the categoryID to see stats and get autorresponders
-router.get('/get-category/:category', (req, res) => {
-	const category = req.params.category;
+// Gets a single category given the categoryName with subscribers and get autorresponders
+router.get('/get-category/:categoryName', (req, res) => {
+	const categoryName = req.params.categoryName;
 	const response = {
 		err: null,
 		category: null
 	};
 
-	functions.getCategory(category, (err, json) => {
+	functions.getCategory(categoryName, (err, json) => {
 		if(err) response.err = err;
 		response.category = json;
 		res.send(response);
@@ -97,91 +47,174 @@ router.get('/get-category/:category', (req, res) => {
 });
 
 // Creates a new category and sets the default values
-router.get('/add-category/:category', (req, res) => {
-	const category = req.params.category;
+router.get('/add-category/:categoryName', (req, res) => {
+	const categoryName = req.params.categoryName;
+	const response = {
+		err: null
+	};
 
-	functions.addCategory(category, err => {
-		if(err) return res.send(err);
-		res.send(null);
+	functions.addCategory(categoryName, err => {
+		if(err) response.err = err;
+		res.send(response);
 	});
 });
 
 // Changes a category name
-router.post('/edit-category/:category', (req, res) => {
-	const category = req.params.category;
-	const newCategory = req.body.data.category;
+router.post('/edit-category/:categoryName', (req, res) => {
+	const categoryName = req.params.categoryName;
+	const newCategoryName = req.body.newCategoryName;
+	const response = {
+		err: null
+	};
 
-	functions.editCategory(category, newCategory, err => {
-		if(err) return res.send(err);
-		res.send(null);
+	functions.editCategory(categoryName, newCategoryName, err => {
+		if(err) response.err = err;
+		res.send(response);
 	});
 });
 
-// Moves the category to the 'deletedCategories' database as a backup instead of deleting it
-router.get('/remove-category/:category', (req, res) => {
-	const category = req.params.category;
+// Moves the category to the 'autorrespondersDeletedCategories' database as a backup instead of deleting it
+router.get('/remove-category/:categoryName', (req, res) => {
+	const categoryName = req.params.categoryName;
+	const response = {
+		err: null
+	};
 
-	functions.removeCategory(category, err => {
-		if(err) return res.send(err);
-		res.send(null);
+	functions.removeCategory(categoryName, err => {
+		if(err) response.err = err;
+		res.send(response);
+	});
+});
+
+/**
+ * CRUD Autorresponders
+ */
+
+// Gets one autorresponder given an _id
+router.get('/get-single-autorresponder/:_id', (req, res) => {
+	const _id = req.params._id;
+	const response = {
+		err: null,
+		autorresponder: null
+	};
+
+	functions.getSingleAutorresponder(_id, (err, single) => {
+		if(err) response.err = err;
+		response.autorresponder = single;
+		res.send(response);
+	});
+});
+
+/** Adds an autorresponder to the category
+ *  autorresponder = {
+ *  	title, content, category
+ *  }
+ */
+router.post('/add-autorresponder', (req, res) => {
+	const autorresponder = req.body;
+	const response = {
+		err: null
+	};
+	
+	functions.addAutorresponder(autorresponder, err => {
+		if(err) response.err = err;
+		res.send(response);
+	});
+});
+
+/**
+ * Changes an autorresponder given an _id
+ * autorresponder = {
+ * 		title, content, category_id, order (Min 1 field)
+ * }
+ */
+router.post('/edit-autorresponder/:_id', (req, res) => {
+	const _id = req.params._id;
+	const autorresponder = req.body.autorresponder;
+	const response = {
+		err: null
+	};
+	
+	functions.editAutorresponder(_id, autorresponder, err => {
+		if(err) response.err = err;
+		res.send(response);
+	});
+});
+
+// Moves the autorresponder to the 'autorrespondersDeleted' database for backup purposes instead of deleting it
+router.get('/remove-autorresponder/:_id', (req, res) => {
+	const _id = req.params._id;
+	const response = {
+		err: null
+	};
+	
+	functions.deleteAutorresponder(_id, err => {
+		if(err) response.err = err;
+		res.send(response);
 	});
 });
 
 /** 
  * CRUD Subscriber
- * {
- * 		id: 'id',
- * 		email: 'string',
- * 		category: 'string',
- * 		created: 'date',
- * 		name: 'string' (optional)
- * }
  */
 
-// Get one subscriber given the id
-router.get('/get-subscriber/:id', (req, res) => {
-	const id = req.params.id;
+// Get one subscriber given the _id
+router.get('/get-subscriber/:_id', (req, res) => {
+	const _id = req.params._id;
 	const response = {
 		err: null,
 		subscriber: null
 	};
 
-	functions.getSubscriber(id, (err, json) => {
+	functions.getSubscriber(_id, (err, json) => {
 		if(err) response.err = err;
 		response.subscriber = json;
 		res.send(response);
 	});
 });
 
-// Adds a new subscriber to the given list
-router.post('/add-subscriber/:category', (req, res) => {
-	const category = req.params.category;
-	const subscriber = req.body.data.subscriber;
+/**
+ * Adds a new subscriber to the given category
+ * subscriber = {
+ * 		email, category, name (optional)
+ * }
+ */
+router.post('/add-subscriber', (req, res) => {
+	const subscriber = req.body.subscriber;
+	const response = {
+		err: null
+	};
 
-	functions.addSubscriber(category, subscriber, err => {
-		if(err) return res.send(err);
-		res.send(null);
+	functions.addSubscriber(subscriber, err => {
+		if(err) response.err = err;
+		res.send(response);
 	});
 });
 
-// Changes a subscriber given the id
-router.post('/edit-subscriber/:id', (req, res) => {
-	const id = req.params.id;
-	const newSubscriber = req.body.data.subscriber;
+// Changes a subscriber given the _id
+router.post('/edit-subscriber/:_id', (req, res) => {
+	const _id = req.params._id;
+	const newSubscriber = req.body.subscriber;
+	const response = {
+		err: null
+	};
 
-	functions.editSubscriber(id, newSubscriber, err => {
-		if(err) return res.send(err);
-		res.send(null);
+	functions.editSubscriber(_id, newSubscriber, err => {
+		if(err) response.err = err;
+		res.send(response);
 	});
 });
 
-// Moves the subscriber to the 'unsubscribed' database instead of deleting for backup purposes
-router.get('/remove-subscriber/:id', (req, res) => {
-	const id = req.params.id;
+// Moves the subscriber to the 'autorrespondersUnsubscribed' database instead of deleting for backup purposes
+router.get('/remove-subscriber/:_id', (req, res) => {
+	const _id = req.params._id;
+	const response = {
+		err: null
+	};
 
-	functions.removeSubscriber(id, err => {
-		if(err) return res.send(err);
-		res.send(null);
+	functions.removeSubscriber(_id, err => {
+		if(err) response.err = err;
+		res.send(response);
 	});
 });
 
