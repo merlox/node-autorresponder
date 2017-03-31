@@ -130,7 +130,7 @@ router.post('/add-autorresponder', (req, res) => {
  */
 router.post('/edit-autorresponder/:_id', (req, res) => {
 	const _id = req.params._id;
-	const autorresponder = req.body.autorresponder;
+	const autorresponder = req.body;
 	const response = {
 		err: null
 	};
