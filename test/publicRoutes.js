@@ -9,6 +9,7 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('./../server.js');
 const should = chai.should();
+const assert = require('assert');
 let db = {};
 
 chai.use(chaiHttp);
@@ -321,6 +322,31 @@ describe('Autorresponders', () => {
 					});
 			});
 		});
+
+		it('should backup the autorresponder to autorrespondersDeleted', cb => {
+			const _id = new ObjectId();
+			const autorresponder = {
+				_id: _id,
+				title: 'Este es un autorresponder genérico',
+				content: 'Este es el contenido del autorresponder',
+				category: 'coches',
+				order: 2
+			};
+
+			db.collection('autorresponders').insert(autorresponder, err => {
+				chai.request(server)
+					.get(`/autorresponder/remove-autorresponder/${_id}`)
+					.end((err, res) => {
+						res.should.have.status(200);
+						
+						db.collection('autorrespondersDeleted').findOne(autorresponder, (err, autorresponderFound) => {
+							assert.deepEqual(autorresponder, autorresponderFound);
+
+							cb();
+						});
+					});
+			});
+		});
 	});
 });
 
@@ -471,6 +497,68 @@ describe('Category', () => {
 					cb();
 				});
 		});
+
+		it('should change all the autorresponders and subscribers category name', cb => {
+			const category = {
+				categoryName: 'example',
+				newCategoryName: 'new-example'
+			};
+			const arraySubscribers = [{
+				category: category.categoryName,
+				email: 'subscriberName1@gmail.com'
+			}, {
+				category: category.categoryName,
+				email: 'subscriberName2@gmail.com'
+			}];
+			const arrayAutorresponders = [{
+				category: category.categoryName,
+				title: 'This is an example',
+				content: 'The content of the autorresponder'
+			}, {
+				category: category.categoryName,
+				title: 'This is another different example',
+				content: 'The content of the other autorresponder'
+			}];
+
+			db.collection('autorresponder').insert(arrayAutorresponders, err => {
+				db.collection('autorrespondersSubscribers').insert(arraySubscribers, err => {
+					db.collection('autorrespondersCategory').insert({
+						name: category.categoryName
+					}, err => {
+						chai.request(server)
+							.post(`/autorresponder/edit-category/`)
+							.send(category)
+							.end((err, res) => {
+								res.should.have.status(200);
+
+								db.collection('autorresponders').find({
+									category: category.newCategoryName
+								}, {
+									_id: false,
+									category: true
+								}, (err, autorrespondersFound) => {
+									for(let i = 0; i < autorrespondersFound.length; i++){
+										assert.equal(autorrespondersFound.category, newCategoryName);
+									}
+
+									db.collection('autorrespondersSubscribers').find({
+										category: category.newCategoryName
+									}, {
+										_id: false,
+										category: true
+									}, (err, subscribersFound) => {
+										for(let i = 0; i < subscribersFound.length; i++){
+											assert.equal(subscribersFound.category, newCategoryName);
+										}
+
+										cb();
+									});
+								});
+							});
+					});
+				});
+			});
+		});
 	});
 
 	describe('REMOVE Category', () => {
@@ -506,6 +594,28 @@ describe('Category', () => {
 
 					cb();
 				});
+		});
+
+		it('should backup the category to the autorrespondersDeletedCategories', cb => {
+			const category = {
+				name: 'examplex'
+			};
+
+			db.collection('autorrespondersCategory').insert(category, err => {
+				chai.request(server)
+					.get(`/autorresponder/remove-category/${category.name}`)
+					.end((err, res) => {
+						res.should.have.status(200);
+
+						db.collection('autorrespondersDeletedCategories').findOne({
+							name: category.name
+						}, (err, categoryFound) => {
+							assert.equal(category.name, categoryFound.name);
+
+							cb();
+						});
+					});
+			});
 		});
 	});
 });
@@ -725,7 +835,7 @@ describe('Subscribers', () => {
 
 		it('should not add a subscriber without category', cb => {
 			const subscriber = {
-				email: 'email@valido.com'
+				email: 'email@valid.com'
 			};
 			const category = {
 				name: 'newsletter'
@@ -750,7 +860,7 @@ describe('Subscribers', () => {
 
 		it('should not add a subscriber to a non-existing category', cb => {
 			const subscriber = {
-				email: 'email@valido.com',
+				email: 'email@valid.com',
 				category: 'newsletter'
 			};
 
@@ -776,7 +886,7 @@ describe('Subscribers', () => {
 			const _id = new ObjectId();
 			const subscriber = {
 				_id: _id,
-				email: 'email@valido.com',
+				email: 'email@valid.com',
 				category: 'newsletter'
 			};
 			const subscriberEdit = {
@@ -808,7 +918,7 @@ describe('Subscribers', () => {
 			const _id = new ObjectId();
 			const subscriber = {
 				_id: _id,
-				email: 'email@valido.com',
+				email: 'email@valid.com',
 				category: 'newsletter'
 			};
 			const category = {
@@ -834,7 +944,7 @@ describe('Subscribers', () => {
 			const _id = new ObjectId();
 			const subscriber = {
 				_id: _id,
-				email: 'email@valido.com',
+				email: 'email@valid.com',
 				category: 'newsletter'
 			};
 			const subscriberEdit = {
@@ -862,7 +972,7 @@ describe('Subscribers', () => {
 			const _id = new ObjectId();
 			const subscriber = {
 				_id: _id,
-				email: 'email@valido.com',
+				email: 'email@valid.com',
 				category: 'newsletter'
 			};
 			const subscriberEdit = {
@@ -890,11 +1000,11 @@ describe('Subscribers', () => {
 			const _id = new ObjectId();
 			const subscriber = {
 				_id: _id,
-				email: 'email@valido.com',
+				email: 'email@valid.com',
 				category: 'newsletter'
 			};
 			const subscriberEdit = {
-				email: 'email@valido.com',
+				email: 'email@valid.com',
 				category: 'newsletter'
 			};
 			const category = {
@@ -924,7 +1034,7 @@ describe('Subscribers', () => {
 			const _id = new ObjectId();
 			const subscriber = {
 				_id: _id,
-				email: 'email@valido.com',
+				email: 'email@valid.com',
 				category: 'newsletter'
 			};
 
@@ -953,6 +1063,31 @@ describe('Subscribers', () => {
 
 					cb();
 				});
+		});
+
+		it('should backup the subscriber to the autorrespondersUnsubscribers database', cb => {
+			const _id = new ObjectId();
+			const subscriber = {
+				_id: _id,
+				email: 'email@valid.com',
+				category: 'newsletter'
+			};
+
+			db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+				chai.request(server)
+					.get(`/autorresponder/remove-subscriber/${_id}`)
+					.end((err, res) => {
+						res.should.have.status(200);
+
+						db.collection('autorrespondersUnsubscribers').findOne({
+							_id: _id
+						}, (err, subscriberFound) => {
+							assert.equal(subscriberFound.email, subscriber.email);
+
+							cb();
+						});
+					});
+			});
 		});
 	});
 });

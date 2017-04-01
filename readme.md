@@ -2,7 +2,7 @@
 
 Node autorresponder is another email marketing application that runs in your hosting on port 8888.
 
-Excellent for marketing, it allows you to establish a relationshing with a list of subscribers sorted by categories using autorresponders. For free!
+Excellent for marketing, it allows you to establish a relationship with a list of subscribers sorted by categories using autorresponders. For free!
 
 If you want to contribute to this project, contact me to establish a system where we can cooperate because right now I'm doing this myself.
 

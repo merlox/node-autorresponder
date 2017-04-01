@@ -1,7 +1,5 @@
 'use strict';
 
-// Last error 63
-
 const mongo = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const path = require('path');
@@ -139,10 +137,34 @@ function editCategory(categoryName, newCategoryName, cb){
 			}, err => {
 				if(err) return cb(`#5 Could not update the new category name ${newCategoryName}`);
 
-				cb(null);
+				updateAllAutorrespondersAndSubscribers();
 			});
 		});
 	});
+
+	function updateAllAutorrespondersAndSubscribers(){
+		db.collection('autorresponders').updateMany({
+			category: categoryName
+		}, {
+			$set: {
+				category: newCategoryName
+			}
+		}, err => {
+			if(err) return cb(`#86 Error updating autorresponders category name to ${newCategoryName}`);
+
+			db.collection('autorrespondersSubscribers').updateMany({
+				category: categoryName
+			}, {
+				$set: {
+					category: newCategoryName
+				}
+			}, err => {
+				if(err) return cb(`#87 Error updating subscribers category name to ${newCategoryName}`);
+				
+				cb(null);
+			});
+		});
+	};
 };
 
 /**
