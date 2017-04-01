@@ -35,6 +35,7 @@ router.get('/get-all-categories/', (req, res) => {
 	functions.getAllCategories((err, categories) => {
 		if(err) response.err = err;
 		response.categories = categories;
+		
 		res.send(response);
 	});
 });
@@ -50,6 +51,7 @@ router.get('/get-category/:categoryName', (req, res) => {
 	functions.getCategory(categoryName, (err, json) => {
 		if(err) response.err = err;
 		response.category = json;
+
 		res.send(response);
 	});
 });
@@ -63,6 +65,7 @@ router.get('/add-category/:categoryName', (req, res) => {
 
 	functions.addCategory(categoryName, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });
@@ -77,6 +80,7 @@ router.post('/edit-category/', (req, res) => {
 
 	functions.editCategory(categoryName, newCategoryName, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });
@@ -90,6 +94,7 @@ router.get('/remove-category/:categoryName', (req, res) => {
 
 	functions.removeCategory(categoryName, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });
@@ -109,6 +114,7 @@ router.get('/get-autorresponder/:_id', (req, res) => {
 	functions.getSingleAutorresponder(_id, (err, single) => {
 		if(err) response.err = err;
 		response.autorresponder = single;
+
 		res.send(response);
 	});
 });
@@ -126,6 +132,7 @@ router.post('/add-autorresponder', (req, res) => {
 	
 	functions.addAutorresponder(autorresponder, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });
@@ -145,6 +152,7 @@ router.post('/edit-autorresponder/:_id', (req, res) => {
 	
 	functions.editAutorresponder(_id, autorresponder, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });
@@ -158,6 +166,7 @@ router.get('/remove-autorresponder/:_id', (req, res) => {
 	
 	functions.deleteAutorresponder(_id, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });
@@ -177,6 +186,7 @@ router.get('/get-subscriber/:_id', (req, res) => {
 	functions.getSubscriber(_id, (err, json) => {
 		if(err) response.err = err;
 		response.subscriber = json;
+
 		res.send(response);
 	});
 });
@@ -195,6 +205,7 @@ router.post('/add-subscriber', (req, res) => {
 
 	functions.addSubscriber(subscriber, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });
@@ -202,13 +213,14 @@ router.post('/add-subscriber', (req, res) => {
 // Changes a subscriber given the _id
 router.post('/edit-subscriber/:_id', (req, res) => {
 	const _id = req.params._id;
-	const newSubscriber = req.body.subscriber;
+	const newSubscriber = req.body;
 	const response = {
 		err: null
 	};
 
 	functions.editSubscriber(_id, newSubscriber, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });
@@ -222,6 +234,7 @@ router.get('/remove-subscriber/:_id', (req, res) => {
 
 	functions.removeSubscriber(_id, err => {
 		if(err) response.err = err;
+
 		res.send(response);
 	});
 });

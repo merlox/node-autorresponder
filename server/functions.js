@@ -38,17 +38,21 @@ function getAllCategories(cb){
 		if(err) return cb(`#41 Error getting all the categories`, null);
 
 		let counter = 0;
-		for(let i = 0; i < categories.length; i++){
-			getCategory(categories[i].name, (err, category) => {
-				counter++;
-				if(err) error = err;
+		if(categories.length > 0){
+			for(let i = 0; i < categories.length; i++){
+				getCategory(categories[i].name, (err, category) => {
+					counter++;
+					if(err) error = err;
 
-				allCategories.push(category);
-				if(counter >= categories.length){
-					if(error) return cb(error, null);
-					cb(null, allCategories);
-				}
-			});
+					allCategories.push(category);
+					if(counter >= categories.length){
+						if(error) return cb(error, null);
+						cb(null, allCategories);
+					}
+				});
+			}
+		}else{
+			cb(null, []);
 		}
 	});
 };
@@ -364,7 +368,10 @@ function deleteAutorresponder(_id, cb){
 };
 
 function getSubscriber(_id, cb){
-	_id = new ObjectId(_id);
+	_id = utilToObjectId(_id);
+
+	if(!_id)
+		return cb(`#84 The subscriber id is not valid, must be 24 characters`);
 
 	db.collection('autorrespondersSubscribers').findOne({
 		_id: _id
@@ -383,21 +390,23 @@ function addSubscriber(subscriber, cb){
 	if(!subscriber.email || subscriber.email.length <= 0) 
 		return cb(`#27 Subscriber email cannot be empty`);
 
-	if(!subscriber.category || !subscriber.category.length <= 0)
+	if(!subscriber.category || subscriber.category.length <= 0)
 		return cb(`#70 Subscriber category cannot be empty`);
 
 	if(!/.+@.+\..+/.test(subscriber.email)) 
 		return cb(`#62 Subscriber email is not valid`);
 
+	// Check if this category exists
 	db.collection('autorrespondersCategory').findOne({
 		name: subscriber.category
 	}, (err, categoryFound) => {
 		if(err) return cb(`#71 Error checking if category exists`);
 		if(!categoryFound) return cb(`#72 Cannot find the category in which to add the subscriber`);
 
+		// Check if this subscriber already exists in the same category
 		db.collection('autorrespondersSubscribers').findOne({
 			email: subscriber.email,
-			category: subscriber.email
+			category: subscriber.category
 		}, (err, subscriberFound) => {
 			if(err) return cb(`#26 Error checking if subscriber ${subscriber.email} exists`);
 			if(subscriberFound) return cb(`#28 Subscriber ${subscriber.email} already exists in that category`);
@@ -414,7 +423,10 @@ function addSubscriber(subscriber, cb){
 function editSubscriber(_id, subscriber, cb){
 	let checkExistingCategory = false;
 	let checkExistingEmail = false;
-	_id = new ObjectId(_id);
+	_id = utilToObjectId(_id);
+
+	if(!_id)
+		return cb(`#85 The subscriber id is not valid, must be 24 characters`);
 
 	if(!subscriber) return cb('#30 Subscriber data cannot be empty');
 
@@ -435,31 +447,38 @@ function editSubscriber(_id, subscriber, cb){
 	}else if(subscriber.email != null && subscriber.email.length <= 0)
 		return cb(`#75 Cannot update the subscriber to an empty email`);
 
-	if(checkExistingEmail && checkExistingCategory){
-		searchExistingEmail(err => {
-			return cb(err);
+	db.collection('autorrespondersSubscribers').findOne({
+		_id: _id
+	}, (err, subscriberFound) => {
+		if(err) return cb(`#81 Error checking if the subscriber exists`);
+		if(!subscriberFound) return cb(`#82 The subscriber ${_id} does not exists`);
 
+		if(checkExistingEmail && checkExistingCategory){
+			searchExistingEmail(err => {
+				return cb(err);
+
+				searchExistingCategory(err => {
+					return cb(err);
+
+					updateSubscriber();
+				});
+			});
+		}else if(checkExistingCategory){
 			searchExistingCategory(err => {
 				return cb(err);
 
 				updateSubscriber();
 			});
-		});
-	}else if(checkExistingCategory){
-		searchExistingCategory(err => {
-			return cb(err);
+		}else if(checkExistingEmail){
+			searchExistingEmail(err => {
+				return cb(err);
 
+				updateSubscriber();
+			});
+		}else{
 			updateSubscriber();
-		});
-	}else if(checkExistingEmail){
-		searchExistingEmail(err => {
-			return cb(err);
-
-			updateSubscriber();
-		});
-	}else{
-		updateSubscriber();
-	}
+		}
+	});
 
 	function updateSubscriber(){
 		db.collection('autorrespondersSubscribers').update({
@@ -497,6 +516,11 @@ function editSubscriber(_id, subscriber, cb){
 };
 
 function removeSubscriber(_id, cb){
+	_id = utilToObjectId(_id);
+
+	if(!_id)
+		return cb(`#83 The subscriber id is not valid, must be 24 characters`);
+
 	db.collection('autorrespondersSubscribers').findOne({
 		_id: _id
 	}, (err, subscriberFound) => {

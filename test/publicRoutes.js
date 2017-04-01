@@ -754,6 +754,7 @@ describe('Subscribers', () => {
 				category: 'newsletter'
 			};
 
+			// Category not inserted
 			db.collection('autorrespondersSubscribers').insert(subscriber, err => {
 				chai.request(server)
 					.post(`/autorresponder/add-subscriber`)
@@ -779,9 +780,8 @@ describe('Subscribers', () => {
 				category: 'newsletter'
 			};
 			const subscriberEdit = {
-				email: 'email@valido.com',
-				category: 'newsletter',
-				name: 'Conejo'
+				email: 'emailNuevo@example.com',
+				category: 'Conejo'
 			};
 			const category = {
 				name: 'Conejo'
@@ -818,7 +818,7 @@ describe('Subscribers', () => {
 			db.collection('autorrespondersCategory').insert(category, err => {
 				chai.request(server)
 					.post(`/autorresponder/edit-subscriber/iaosdfuyhn3`)
-					.send(subscriberEdit)
+					.send(subscriber)
 					.end((err, res) => {
 						res.should.have.status(200);
 						res.body.should.be.a('object');
