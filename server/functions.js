@@ -1,6 +1,6 @@
 'use strict';
 
-// Last error 61
+// Last error 62
 
 const mongo = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
@@ -345,6 +345,7 @@ function getSubscriber(_id, cb){
 
 function addSubscriber(category_id, subscriber, cb){
 	if(!subscriber || !subscriber.email) return cb(`#27 New subscriber email cannot be empty`);
+	if(!/.+@.+\..+/.test(subscriber.email)) return cb(`#62 New subscriber email is not valid`);
 
 	db.collection('autorrespondersSubscribers').findOne({
 		email: subscriber.email
