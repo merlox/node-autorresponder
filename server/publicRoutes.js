@@ -13,6 +13,13 @@ const functions = require('./functions.js');
  * ► Update category subscribers categoryname and autorresponders categoryname when category name changes in /edit-category
  */
 
+router.use((req, res, next) => {
+	if(req.originalUrl.substring(-1) === '/' && req.originalUrl.length > 0)
+		res.redirect(301, req.originalUrl.slice(0, 1));
+	else
+		next();
+});
+
 /**
  * CRUD Categories
  */
@@ -60,8 +67,8 @@ router.get('/add-category/:categoryName', (req, res) => {
 });
 
 // Changes a category name
-router.post('/edit-category/:categoryName', (req, res) => {
-	const categoryName = req.params.categoryName;
+router.post('/edit-category/', (req, res) => {
+	const categoryName = req.body.categoryName;
 	const newCategoryName = req.body.newCategoryName;
 	const response = {
 		err: null
@@ -91,7 +98,7 @@ router.get('/remove-category/:categoryName', (req, res) => {
  */
 
 // Gets one autorresponder given an _id
-router.get('/get-single-autorresponder/:_id', (req, res) => {
+router.get('/get-autorresponder/:_id', (req, res) => {
 	const _id = req.params._id;
 	const response = {
 		err: null,
@@ -107,7 +114,7 @@ router.get('/get-single-autorresponder/:_id', (req, res) => {
 
 /** Adds an autorresponder to the category
  *  autorresponder = {
- *  	title, content, category
+ *  	title, content, category, order (optional order)
  *  }
  */
 router.post('/add-autorresponder', (req, res) => {
@@ -125,7 +132,7 @@ router.post('/add-autorresponder', (req, res) => {
 /**
  * Changes an autorresponder given an _id
  * autorresponder = {
- * 		title, content, category_id, order (Min 1 field)
+ * 		title, content, category, order (Min 1 field)
  * }
  */
 router.post('/edit-autorresponder/:_id', (req, res) => {

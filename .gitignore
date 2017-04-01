@@ -1,4 +1,4 @@
 node_modules/
-secrets/
+config/
 node-v7.8.0.tar.gz
 node-v7.8.0/

@@ -1,19 +1,22 @@
 'use strict';
 
-// Last error 53
+// Last error 61
 
 const mongo = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const path = require('path');
-const secrets = require('./../secrets/secrets.js');
-const mongoUrl = secrets.mongoUrl;
+const config = require('./../config/config.json');
+let mongoUrl = '';
 let db = {};
+
+if(process.env.NODE_ENV === 'test')
+	mongoUrl = config.testMongo;
+else
+	mongoUrl = config.mongo;
 
 connectDatabase();
 
 function connectDatabase(){
-	console.log('connectDatabase, functions.js');
-
 	mongo.connect(mongoUrl, (err, database) => {
 		if(err){
 			setTimeout(() => {
@@ -24,12 +27,10 @@ function connectDatabase(){
 		}
 
 		db = database;
-		console.log('Connected');
 	});
 };
 
 function getAllCategories(cb){
-	console.log('getAllCategories, functions.js');
 	const allCategories = [];
 	let error = null;
 
@@ -61,8 +62,6 @@ function getAllCategories(cb){
  * }
  */
 function getCategory(categoryName, cb){
-	console.log('getCategory, functions.js');
-
 	db.collection('autorrespondersCategory').findOne({
 		name: categoryName
 	}, (err, json) => {
@@ -92,8 +91,6 @@ function getCategory(categoryName, cb){
 };
 
 function addCategory(categoryName, cb){
-	console.log('addCategory, functions.js');
-
 	db.collection('autorrespondersCategory').findOne({
 		name: categoryName
 	}, (err, result) => {
@@ -114,8 +111,7 @@ function addCategory(categoryName, cb){
 };
 
 function editCategory(categoryName, newCategoryName, cb){
-	console.log('editCategory, functions.js');
-
+	if(!categoryName) return cb(`#61 The category name cannot be empty`);
 	if(!newCategoryName) return cb(`#39 The new category name cannot be empty`);
 
 	db.collection('autorrespondersCategory').findOne({
@@ -150,8 +146,6 @@ function editCategory(categoryName, newCategoryName, cb){
  * then it removes the category from the 'autorrespondersCategory' database
  */
 function removeCategory(categoryName, cb){
-	console.log('removeCategory, functions.js');
-
 	db.collection('autorrespondersCategory').findOne({
 		name: categoryName
 	}, (err, categoryFound) => {
@@ -173,8 +167,6 @@ function removeCategory(categoryName, cb){
 };
 
 function getSingleAutorresponder(_id, cb){
-	console.log('getSingleAutorresponder, functions.js');
-
 	_id = utilToObjectId(_id);
 	if(!ObjectId)
 		return `#51 Could not convert id to objectId, must be 24 characters`;
@@ -189,12 +181,17 @@ function getSingleAutorresponder(_id, cb){
 };
 
 function addAutorresponder(autorresponder, cb){
-	console.log('addAutorresponder, functions.js');
+	let updateOrder = false;
 
 	if(!autorresponder) return cb(`#42 No autorresponder body received`);
 	if(!autorresponder.title) return cb(`#43 No autorresponder title received`);
 	if(!autorresponder.content) return cb(`#44 No autorresponder content received`);
 	if(!autorresponder.category) return cb(`#45 No autorresponder category received`);
+	if(autorresponder.order && autorresponder.order > 0){
+		updateOrder = true;
+	}else if(autorresponder.order <= 0){
+		return cb(`#54 The order of the autorresponder must be bigger than 0`);
+	}
 
 	db.collection('autorrespondersCategory').findOne({
 		name: autorresponder.category
@@ -202,28 +199,55 @@ function addAutorresponder(autorresponder, cb){
 		if(err) return cb(`#46 Error checking if category ${autorresponder.category} exists`);
 		if(!category) return cb(`#47 The category ${autorresponder.category} does not exists`);
 
-		db.collection('autorresponders').find({
-			category: autorresponder.category
-		}).count((err, count) => {
-			if(err) return cb(`#14 Error adding autorresponder to the category ${autorresponder.category}`);
-			
+		// If no order has been set, insert it at the end of the category order
+		if(!updateOrder){
+			db.collection('autorresponders').find({
+				category: autorresponder.category
+			}).count((err, count) => {
+				if(err) return cb(`#14 Error adding autorresponder to the category ${autorresponder.category}`);
+				
+				checkIfRepeated(autorresponder, (err, isRepeated) => {
+					if(err) return cb(err);
+					if(isRepeated) return cb(`#49 The autorresponder: '${autorresponder.title}' is repeated`);
+
+					db.collection('autorresponders').insert({
+						category: autorresponder.category,
+						title: autorresponder.title,
+						content: autorresponder.content,
+						created: new Date().getTime(),
+						order: ++count
+					}, err => {
+						if(err) return cb(`#15 Could not add autorresponder to the category ${autorresponder.category}`);
+
+						cb(null);
+					});
+				});
+			});
+		}else{
+			const _id = new ObjectId();
+
 			checkIfRepeated(autorresponder, (err, isRepeated) => {
 				if(err) return cb(err);
-				if(isRepeated) return cb(`#49 The autorresponder: '${autorresponder.title}' is repeated`);
+				if(isRepeated) return cb(`#56 The autorresponder: '${autorresponder.title}' is repeated`);
 
 				db.collection('autorresponders').insert({
+					_id: _id,
 					category: autorresponder.category,
 					title: autorresponder.title,
 					content: autorresponder.content,
 					created: new Date().getTime(),
-					order: ++count
+					order: autorresponder.order
 				}, err => {
-					if(err) return cb(`#15 Could not add autorresponder to the category ${autorresponder.category}`);
+					if(err) return cb(`#57 Could not add autorresponder to the category ${autorresponder.category}`);
 
-					cb(null);
+					utilIncreaseOrderNextAutorresponders(_id, err => {
+						if(err) return cb(err);
+
+						cb(null);
+					});
 				});
 			});
-		});
+		}
 	});
 
 	function checkIfRepeated(autorresponder, cb){
@@ -240,7 +264,6 @@ function addAutorresponder(autorresponder, cb){
 };
 
 function editAutorresponder(_id, autorresponder, cb){
-	console.log('editAutorresponder, functions.js');
 	const newAutorresponder = {};
 	let updateOrder = false;
 
@@ -253,54 +276,39 @@ function editAutorresponder(_id, autorresponder, cb){
 	if(autorresponder.title) newAutorresponder['title'] = autorresponder.title;
 	if(autorresponder.content) newAutorresponder['content'] = autorresponder.content;
 	if(autorresponder.category) newAutorresponder['category'] = autorresponder.category;
-	if(autorresponder.order){
+	if(autorresponder.order && autorresponder.order > 0){
 		newAutorresponder['order'] = parseInt(autorresponder.order);
 		updateOrder = true;
-	}
+	}else if(autorresponder.order <= 0)
+		return cb(`#55 The order of the autorresponder must be bigger than 0`);
 
-	db.collection('autorresponders').update({
+	db.collection('autorresponders').findOne({
 		_id: _id
-	}, {
-		$set: newAutorresponder
-	}, err => {
-		if(err) return cb(`#16 Could not update the autorresponder ${_id.toHexString()}`);
+	}, (err, autorresponderFound) => {
+		if(err) return cb(`#58 Error searching the autorresponder ${_id}`);
+		if(!autorresponderFound) return cb(`#59 Cannot find the autorresponder ${_id}`);
 
-		if(updateOrder){
+		db.collection('autorresponders').update({
+			_id: _id
+		}, {
+			$set: newAutorresponder
+		}, err => {
+			if(err) return cb(`#16 Could not update the autorresponder ${_id.toHexString()}`);
 
-			// Search the autorresponder to get category and increase the order 
-			// of the next autorresponders in that same category
-			db.collection('autorresponders').findOne({
-				_id: _id
-			}, (err, autorresponderFound) => {
-				if(err) return cb(`#17 Could not find the autorresponder ${_id.toHexString()}`);
-
-				db.collection('autorresponders').updateMany({
-					_id: {
-						$ne: _id
-					},
-					category: autorresponderFound.category,
-					order: {
-						$gte: autorresponderFound.order
-					}
-				}, {
-					$inc: {
-						order: 1
-					}
-				}, err => {
-					if(err) return cb(`#18 Could not increase the order of the category ${autorresponderFound.category} when updating the order of the autorresponder: '${_id.toHexString()}' ${err}`);
+			if(updateOrder){
+				utilIncreaseOrderNextAutorresponders(_id, err => {
+					if(err) return cb(err);
 
 					cb(null);
 				});
-			});
-		}else{
-			cb(null);
-		}
+			}else{
+				cb(null);
+			}
+		});
 	});
 };
 
-function deleteAutorresponder(_id){
-	console.log('deleteAutorresponder, functions.js');
-
+function deleteAutorresponder(_id, cb){
 	_id = utilToObjectId(_id);
 	if(!ObjectId)
 		return `#53 Could not convert id to objectId, must be 24 characters`;
@@ -326,8 +334,6 @@ function deleteAutorresponder(_id){
 };
 
 function getSubscriber(_id, cb){
-	console.log('getSubscriber, functions.js');
-
 	db.collection('autorrespondersSubscribers').findOne({
 		_id: _id
 	}, (err, subscriber) => {
@@ -338,8 +344,6 @@ function getSubscriber(_id, cb){
 };
 
 function addSubscriber(category_id, subscriber, cb){
-	console.log('addSubscriber, functions.js');
-
 	if(!subscriber || !subscriber.email) return cb(`#27 New subscriber email cannot be empty`);
 
 	db.collection('autorrespondersSubscribers').findOne({
@@ -357,8 +361,6 @@ function addSubscriber(category_id, subscriber, cb){
 };
 
 function editSubscriber(_id, newSubscriber, cb){
-	console.log('editSubscriber, functions.js');
-
 	if(Object.keys(newSubscriber).length < 1) return cb('#30 Subscriber data cannot be empty');
 
 	db.collection('autorrespondersSubscribers').update({
@@ -373,8 +375,6 @@ function editSubscriber(_id, newSubscriber, cb){
 };
 
 function removeSubscriber(_id, cb){
-	console.log('removeSubscriber, functions.js');
-
 	db.collection('autorrespondersSubscribers').findOne({
 		_id: _id
 	}, (err, subscriberFound) => {
@@ -411,7 +411,8 @@ exports.removeSubscriber = removeSubscriber;
 
 /**
  * Convert an id to a mongo object id
- * Returns error or null
+ * @param {string} _id the string id to convert. Must be 24 chars
+ * @returns error or null
  */
 function utilToObjectId(id){
 	try{
@@ -421,4 +422,40 @@ function utilToObjectId(id){
 	}
 
 	return id;
+};
+
+/**
+ * Increases the order of the autorresponders that have bigger or equal order
+ * of the _id received
+ * @param {string} _id the id of the modified order autorresponder
+ * @returns callback null or error
+ */
+function utilIncreaseOrderNextAutorresponders(_id, cb){
+
+	// Search the autorresponder to get category and increase the order 
+	// of the next autorresponders in that same category
+	db.collection('autorresponders').findOne({
+		_id: _id
+	}, (err, autorresponderFound) => {
+		if(err) return cb(`#17 Error searching the autorresponder ${_id.toHexString()}`);
+		if(!autorresponderFound) return cb(`#60 Could not find the autorresponder ${_id.toHexString()}`);
+
+		db.collection('autorresponders').updateMany({
+			_id: {
+				$ne: _id
+			},
+			category: autorresponderFound.category,
+			order: {
+				$gte: autorresponderFound.order
+			}
+		}, {
+			$inc: {
+				order: 1
+			}
+		}, err => {
+			if(err) return cb(`#18 Could not increase the order of the category ${autorresponderFound.category} when updating the order of the autorresponder: '${_id.toHexString()}' ${err}`);
+
+			cb(null);
+		});
+	});
 };
