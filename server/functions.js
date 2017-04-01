@@ -1,6 +1,6 @@
 'use strict';
 
-// Last error 62
+// Last error 63
 
 const mongo = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
@@ -266,6 +266,7 @@ function addAutorresponder(autorresponder, cb){
 function editAutorresponder(_id, autorresponder, cb){
 	const newAutorresponder = {};
 	let updateOrder = false;
+	let checkExistingCategory = false;
 
 	_id = utilToObjectId(_id);
 	if(!ObjectId)
@@ -273,39 +274,68 @@ function editAutorresponder(_id, autorresponder, cb){
 
 	if(!autorresponder || Object.keys(autorresponder).length < 1)
 		return cb(`#50 No updating parameters received`);
-	if(autorresponder.title) newAutorresponder['title'] = autorresponder.title;
-	if(autorresponder.content) newAutorresponder['content'] = autorresponder.content;
-	if(autorresponder.category) newAutorresponder['category'] = autorresponder.category;
-	if(autorresponder.order && autorresponder.order > 0){
+
+	if(autorresponder.title != null && autorresponder.title.length > 0) 
+		newAutorresponder['title'] = autorresponder.title;
+	else if(autorresponder.title != null && autorresponder.title.length <= 0)
+		return cb(`#63 The autorresponder title cannot be empty`);
+
+	if(autorresponder.content != null && autorresponder.content.length > 0) 
+		newAutorresponder['content'] = autorresponder.content;
+	else if (autorresponder.content != null && autorresponder.content.length <= 0)
+		return cb(`#64 The autorresponder content cannot be empty`);
+
+	if(autorresponder.order != null && autorresponder.order > 0){
 		newAutorresponder['order'] = parseInt(autorresponder.order);
 		updateOrder = true;
-	}else if(autorresponder.order <= 0)
+	}else if(autorresponder.order != null && autorresponder.order <= 0)
 		return cb(`#55 The order of the autorresponder must be bigger than 0`);
 
-	db.collection('autorresponders').findOne({
-		_id: _id
-	}, (err, autorresponderFound) => {
-		if(err) return cb(`#58 Error searching the autorresponder ${_id}`);
-		if(!autorresponderFound) return cb(`#59 Cannot find the autorresponder ${_id}`);
+	if(autorresponder.category != null && autorresponder.category.length > 0){
+		newAutorresponder['category'] = autorresponder.category;
+		checkExistingCategory = true;
+	}else if(autorresponder.category != null && autorresponder.category.length <= 0)
+		return cb(`#65 The category of the autorresponder cannot be empty`);		 
 
-		db.collection('autorresponders').update({
-			_id: _id
-		}, {
-			$set: newAutorresponder
-		}, err => {
-			if(err) return cb(`#16 Could not update the autorresponder ${_id.toHexString()}`);
+	if(checkExistingCategory){
+		db.collection('autorrespondersCategory').findOne({
+			name: autorresponder.category
+		}, (err, categoryFound) => {
+			if(err) return cb(`#66 Error checking if category: '${autorresponder.category}' exists`);
+			if(!categoryFound) return cb(`#67 The category: '${autorresponder.category}' does not exist`);
 
-			if(updateOrder){
-				utilIncreaseOrderNextAutorresponders(_id, err => {
-					if(err) return cb(err);
-
-					cb(null);
-				});
-			}else{
-				cb(null);
-			}
+			updateAutorresponder();
 		});
-	});
+	}else{
+		updateAutorresponder();
+	}
+
+	function updateAutorresponder(){
+		db.collection('autorresponders').findOne({
+			_id: _id
+		}, (err, autorresponderFound) => {
+			if(err) return cb(`#58 Error searching the autorresponder ${_id}`);
+			if(!autorresponderFound) return cb(`#59 Cannot find the autorresponder ${_id}`);
+
+			db.collection('autorresponders').update({
+				_id: _id
+			}, {
+				$set: newAutorresponder
+			}, err => {
+				if(err) return cb(`#16 Could not update the autorresponder ${_id.toHexString()}`);
+
+				if(updateOrder){
+					utilIncreaseOrderNextAutorresponders(_id, err => {
+						if(err) return cb(err);
+
+						cb(null);
+					});
+				}else{
+					cb(null);
+				}
+			});
+		});
+	};
 };
 
 function deleteAutorresponder(_id, cb){
@@ -334,45 +364,136 @@ function deleteAutorresponder(_id, cb){
 };
 
 function getSubscriber(_id, cb){
+	_id = new ObjectId(_id);
+
 	db.collection('autorrespondersSubscribers').findOne({
 		_id: _id
 	}, (err, subscriber) => {
 		if(err) return cb(`#23 Error searching the subscriber`, null);
+		if(!subscriber) return cb(`#68 No subscriber has been found`, null);
 
 		cb(null, subscriber);
 	});
 };
 
-function addSubscriber(category_id, subscriber, cb){
-	if(!subscriber || !subscriber.email) return cb(`#27 New subscriber email cannot be empty`);
-	if(!/.+@.+\..+/.test(subscriber.email)) return cb(`#62 New subscriber email is not valid`);
+function addSubscriber(subscriber, cb){
+	if(!subscriber)
+		return cb(`#69 Subscriber data has not been received`);
 
-	db.collection('autorrespondersSubscribers').findOne({
-		email: subscriber.email
-	}, (err, subscriberFound) => {
-		if(err) return cb(`#26 Error checking if subscriber ${subscriber.email} exists`);
-		if(subscriberFound) return cb(`#28 Subscriber ${subscriber.email} already exists`);
+	if(!subscriber.email || subscriber.email.length <= 0) 
+		return cb(`#27 Subscriber email cannot be empty`);
 
-		db.collection('autorrespondersSubscribers').insert(subscriber, err => {
-			if(err) return cb(`#29 Error inserting subscriber ${subscriber.email}`);
+	if(!subscriber.category || !subscriber.category.length <= 0)
+		return cb(`#70 Subscriber category cannot be empty`);
 
-			cb(null);
+	if(!/.+@.+\..+/.test(subscriber.email)) 
+		return cb(`#62 Subscriber email is not valid`);
+
+	db.collection('autorrespondersCategory').findOne({
+		name: subscriber.category
+	}, (err, categoryFound) => {
+		if(err) return cb(`#71 Error checking if category exists`);
+		if(!categoryFound) return cb(`#72 Cannot find the category in which to add the subscriber`);
+
+		db.collection('autorrespondersSubscribers').findOne({
+			email: subscriber.email,
+			category: subscriber.email
+		}, (err, subscriberFound) => {
+			if(err) return cb(`#26 Error checking if subscriber ${subscriber.email} exists`);
+			if(subscriberFound) return cb(`#28 Subscriber ${subscriber.email} already exists in that category`);
+
+			db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+				if(err) return cb(`#29 Error inserting subscriber ${subscriber.email}`);
+
+				cb(null);
+			});
 		});
 	});
 };
 
-function editSubscriber(_id, newSubscriber, cb){
-	if(Object.keys(newSubscriber).length < 1) return cb('#30 Subscriber data cannot be empty');
+function editSubscriber(_id, subscriber, cb){
+	let checkExistingCategory = false;
+	let checkExistingEmail = false;
+	_id = new ObjectId(_id);
 
-	db.collection('autorrespondersSubscribers').update({
-		_id: _id
-	}, {
-		$set: newSubscriber
-	}, err => {
-		if(err) return cb(`#31 Could not update subscriber ${_id}`);
+	if(!subscriber) return cb('#30 Subscriber data cannot be empty');
 
-		cb(null);
-	});
+	if(subscriber.category != null && subscriber.category.length > 0)
+		checkExistingCategory = true;
+	else if(subscriber.category != null && subscriber.category.length <= 0)
+		return cb(`#73 Cannot update the subscriber to an empty category`);
+
+	if(subscriber.name != null && subscriber.name.length <= 0)
+		return cb(`#74 Cannot update the subscriber to an empty name`);
+
+	if(subscriber.email != null && subscriber.email.length > 0){
+		if(!/.+@.+\..+/.test(subscriber.email))
+			return cb(`#76 Cannot update the subscriber email without a valid email`);
+		else
+			checkExistingEmail = true;
+
+	}else if(subscriber.email != null && subscriber.email.length <= 0)
+		return cb(`#75 Cannot update the subscriber to an empty email`);
+
+	if(checkExistingEmail && checkExistingCategory){
+		searchExistingEmail(err => {
+			return cb(err);
+
+			searchExistingCategory(err => {
+				return cb(err);
+
+				updateSubscriber();
+			});
+		});
+	}else if(checkExistingCategory){
+		searchExistingCategory(err => {
+			return cb(err);
+
+			updateSubscriber();
+		});
+	}else if(checkExistingEmail){
+		searchExistingEmail(err => {
+			return cb(err);
+
+			updateSubscriber();
+		});
+	}else{
+		updateSubscriber();
+	}
+
+	function updateSubscriber(){
+		db.collection('autorrespondersSubscribers').update({
+			_id: _id
+		}, {
+			$set: subscriber
+		}, err => {
+			if(err) return cb(`#31 Could not update subscriber ${_id}`);
+
+			cb(null);
+		});
+	};
+
+	function searchExistingEmail(done){
+		db.collection('autorrespondersSubscribers').findOne({
+			email: subscriber.email
+		}, (err, subscriberFound) => {
+			if(err) return done(`#77 Error checking if the new email exists already`);
+			if(subscriberFound) return done(`#78 The email ${subscriber.email} already exists`);
+
+			done(null);
+		});
+	};
+
+	function searchExistingCategory(done){
+		db.collection('autorrespondersCategory').findOne({
+			name: subscriber.category
+		}, (err, categoryFound) => {
+			if(err) return done(`#79 Error checking if the new category exists`);
+			if(!categoryFound) return done(`#80 Cannot find the category ${subscriber.category}`);
+
+			done(null);
+		});
+	};
 };
 
 function removeSubscriber(_id, cb){

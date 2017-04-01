@@ -1,3 +1,6 @@
+Last error: 80
+
+
 Crear un servidor api que permita autorresponders node:
 
 - lista de suscriptores en diferentes categorias

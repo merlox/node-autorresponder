@@ -211,7 +211,37 @@ describe('Autorresponders', () => {
 			db.collection('autorresponders').insert(autorresponder, err => {
 				chai.request(server)
 					.post(`/autorresponder/edit-autorresponder/${_id}`)
-					.send(autorresponder)
+					.send(autorresponderEdit)
+					.end((err, res) => {
+						res.should.have.status(200);
+						res.body.should.be.a('object');
+						res.body.should.have.property('err');
+						res.body.err.should.not.equal(null);
+						
+						cb();
+					});
+			});
+		});
+
+		it('should not edit an existing autorresponder with a non-existing category', cb => {
+			const _id = new ObjectId();
+			const autorresponder = {
+				_id: _id,
+				title: 'Este es un autorresponder genérico',
+				content: 'Este es el contenido del autorresponder',
+				category: 'coches',
+				order: 2
+			};
+			const autorresponderEdit = {
+				title: 'Este es un nuevo autorresponder genérico',
+				content: 'Este es el nuevo contenido del autorresponder',
+				category: 'hjoiuouio'
+			};
+
+			db.collection('autorresponders').insert(autorresponder, err => {
+				chai.request(server)
+					.post(`/autorresponder/edit-autorresponder/${_id}`)
+					.send(autorresponderEdit)
 					.end((err, res) => {
 						res.should.have.status(200);
 						res.body.should.be.a('object');
@@ -318,7 +348,7 @@ describe('Category', () => {
 					res.body.should.have.property('err');
 					res.body.should.have.property('err').eql(null);
 					res.body.should.have.property('categories');
-					res.body.categories.shoult.not.equals(null);
+					res.body.categories.should.not.equals(null);
 
 					cb();
 				});
@@ -753,19 +783,24 @@ describe('Subscribers', () => {
 				category: 'newsletter',
 				name: 'Conejo'
 			};
+			const category = {
+				name: 'Conejo'
+			};
 
-			db.collection('autorrespondersSubscribers').insert(subscriber, err => {
-				chai.request(server)
-					.post(`/autorresponder/edit-subscriber/${_id}`)
-					.send(subscriberEdit)
-					.end((err, res) => {
-						res.should.have.status(200);
-						res.body.should.be.a('object');
-						res.body.should.have.property('err');
-						res.body.should.have.property('err').eql(null);
+			db.collection('autorrespondersCategory').insert(category, err => {
+				db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+					chai.request(server)
+						.post(`/autorresponder/edit-subscriber/${_id}`)
+						.send(subscriberEdit)
+						.end((err, res) => {
+							res.should.have.status(200);
+							res.body.should.be.a('object');
+							res.body.should.have.property('err');
+							res.body.should.have.property('err').eql(null);
 
-						cb();
-					});
+							cb();
+						});
+				});
 			});
 		});
 
@@ -776,18 +811,23 @@ describe('Subscribers', () => {
 				email: 'email@valido.com',
 				category: 'newsletter'
 			};
+			const category = {
+				name: 'newsletter'
+			};
 
-			chai.request(server)
-				.post(`/autorresponder/edit-subscriber/iaosdfuyhn3`)
-				.send(subscriberEdit)
-				.end((err, res) => {
-					res.should.have.status(200);
-					res.body.should.be.a('object');
-					res.body.should.have.property('err');
-					res.body.err.should.not.equals(null);
+			db.collection('autorrespondersCategory').insert(category, err => {
+				chai.request(server)
+					.post(`/autorresponder/edit-subscriber/iaosdfuyhn3`)
+					.send(subscriberEdit)
+					.end((err, res) => {
+						res.should.have.status(200);
+						res.body.should.be.a('object');
+						res.body.should.have.property('err');
+						res.body.err.should.not.equals(null);
 
-					cb();
-				});
+						cb();
+					});
+			});
 		});
 
 		it('should not edit a existing subscriber with empty fields', cb => {
@@ -800,7 +840,7 @@ describe('Subscribers', () => {
 			const subscriberEdit = {
 				email: '',
 				category: '',
-				name: 'Conejo'
+				name: 'Pepe Navarro'
 			};
 
 			db.collection('autorrespondersSubscribers').insert(subscriber, err => {
@@ -816,6 +856,103 @@ describe('Subscribers', () => {
 						cb();
 					});
 			});
+		});
+
+		it('should not edit an existing subscriber to a non-existing category', cb => {
+			const _id = new ObjectId();
+			const subscriber = {
+				_id: _id,
+				email: 'email@valido.com',
+				category: 'newsletter'
+			};
+			const subscriberEdit = {
+				email: '',
+				category: '',
+				name: 'thisdoesntexist'
+			};
+
+			db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+				chai.request(server)
+					.post(`/autorresponder/edit-subscriber/${_id}`)
+					.send(subscriberEdit)
+					.end((err, res) => {
+						res.should.have.status(200);
+						res.body.should.be.a('object');
+						res.body.should.have.property('err');
+						res.body.err.should.not.equals(null);
+
+						cb();
+					});
+			});
+		});
+
+		it('should not edit an existing subscriber to an already existing email', cb => {
+			const _id = new ObjectId();
+			const subscriber = {
+				_id: _id,
+				email: 'email@valido.com',
+				category: 'newsletter'
+			};
+			const subscriberEdit = {
+				email: 'email@valido.com',
+				category: 'newsletter'
+			};
+			const category = {
+				name: 'newsletter'
+			};
+
+			db.collection('autorrespondersCategory').insert(category, err => {
+				db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+					chai.request(server)
+						.post(`/autorresponder/edit-subscriber/${_id}`)
+						.send(subscriberEdit)
+						.end((err, res) => {
+							res.should.have.status(200);
+							res.body.should.be.a('object');
+							res.body.should.have.property('err');
+							res.body.err.should.not.equals(null);
+
+							cb();
+						});
+				});
+			});
+		});
+	});
+
+	describe('REMOVE Subscriber', () => {
+		it('should remove an existing subscriber', cb => {
+			const _id = new ObjectId();
+			const subscriber = {
+				_id: _id,
+				email: 'email@valido.com',
+				category: 'newsletter'
+			};
+
+			db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+				chai.request(server)
+					.get(`/autorresponder/remove-subscriber/${_id}`)
+					.end((err, res) => {
+						res.should.have.status(200);
+						res.body.should.be.a('object');
+						res.body.should.have.property('err');
+						res.body.should.have.property('err').eql(null);
+
+						cb();
+					});
+			});
+		});
+
+		it('should not remove a non-existing subscriber', cb => {
+			chai.request(server)
+				.get(`/autorresponder/remove-subscriber/18645asd4f2sdf`)
+				.end((err, res) => {
+					res.should.have.status(200);
+					res.body.should.be.a('object');
+					res.body.should.have.property('err');
+					res.body.err.should.not.equals(null);
+
+					cb();
+				});
 		});
 	});
 });

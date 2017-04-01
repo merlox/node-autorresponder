@@ -13,6 +13,7 @@ const functions = require('./functions.js');
  * ► Update category subscribers categoryname and autorresponders categoryname when category name changes in /edit-category
  */
 
+// To accept both ended with slash and without slash urls
 router.use((req, res, next) => {
 	if(req.originalUrl.substring(-1) === '/' && req.originalUrl.length > 0)
 		res.redirect(301, req.originalUrl.slice(0, 1));
@@ -187,7 +188,7 @@ router.get('/get-subscriber/:_id', (req, res) => {
  * }
  */
 router.post('/add-subscriber', (req, res) => {
-	const subscriber = req.body.subscriber;
+	const subscriber = req.body;
 	const response = {
 		err: null
 	};
