@@ -2,13 +2,13 @@
 
 onload(getCategories);
 
+// Don't hide overlay if they click the email or email edit
 listenAll('.autorresponder-email, .autorresponder-edit', 'click', (e) => {
 	e.stopPropagation();
 });
-
 listen('.overlay', 'click', hideOverlay);
-
 listen('.autorresponder-edit-submit', 'click', updateAutorresponder);
+listen('.autorresponder-add-submit', 'click', addAutorresponder);
 
 function getCategories(){
 	httpGet('/autorresponder/get-all-categories', (err, response) => {
@@ -22,6 +22,7 @@ function getCategories(){
 					<div class="category-header">
 						<h3>${category.name}</h3>
 						<span>${category.subscribers.length} Subs</span>
+						<button class="category-add-autorresponder">Add</button>
 					</div>
 					<ul class="category-autorresponders">`;
 
@@ -56,6 +57,7 @@ function getCategories(){
 		listenAll('.category-autorresponders > li', 'mouseenter', showActionsAutorresponder);
 		listenAll('.category-autorresponders > li', 'mouseleave', hideActionsAutorresponder);
 		listenAll('.category-autorresponders > li', 'click', clickActionsAutorresponder);
+		listenAll('.category-add-autorresponder', 'click', loadAutorresponderAdd);
 	});
 };
 
@@ -107,9 +109,23 @@ function loadAutorresponderEdit(id){
 		tinyMCE.activeEditor.setContent(response.autorresponder.content);
 		q('.autorresponder-edit-title').value = response.autorresponder.title;
 		q('.autorresponder-edit-order').value = response.autorresponder.order;
+		q('.autorresponder-edit-submit').style.display = 'inline-block';
+		q('.autorresponder-add-submit').style.display = 'none';
 		q('.autorresponder-edit').style.display = 'block';
 		q('.overlay').style.display = 'block';
 	});
+};
+
+// Shows the overlay with the add autorresponder button and sets the fields values
+function loadAutorresponderAdd(e){
+	const category = e.target.parentNode.querySelector('h3').innerHTML.toLowerCase();
+
+	resetAutorresponderFields();
+	q('.autorresponder-edit-category').value = category;
+	q('.autorresponder-edit-submit').style.display = 'none';
+	q('.autorresponder-add-submit').style.display = 'inline-block';
+	q('.autorresponder-edit').style.display = 'block';
+	q('.overlay').style.display = 'block';
 };
 
 function updateAutorresponder(){
@@ -129,6 +145,34 @@ function updateAutorresponder(){
 	});
 };
 
+function deleteAutorresponder(id){
+	httpGet(`/autorresponder/remove-autorresponder/${id}`, (err, response) => {
+		if(err) return error(err);
+		if(response.err) return error(response.err);
+
+		reloadCategories();
+	});
+};
+
+function addAutorresponder(){
+	const autorresponder = {
+		category: q('.autorresponder-edit-category').value,
+		title: q('.autorresponder-edit-title').value,
+		content: tinyMCE.activeEditor.getContent()
+	};
+	const order = q('.autorresponder-edit-order').value;
+
+	if(order != null && order.length != 0)
+		autorresponder['order'] = order;
+
+	httpPost('/autorresponder/add-autorresponder', autorresponder, (err, response) => {
+		if(err) return error(err);
+		if(response.err) return error(response.err);
+
+		reloadCategories();
+	});
+};
+
 function hideOverlay(){
 	q('.overlay').style.display = 'none';
 	q('.autorresponder-email').style.display = 'none';
@@ -139,4 +183,12 @@ function reloadCategories(){
 	q('.container-categories').innerHTML = '';
 	getCategories();
 	hideOverlay();
+};
+
+function resetAutorresponderFields(){
+	q('.autorresponder-edit-id').value = '';
+	q('.autorresponder-edit-category').value = '';
+	tinyMCE.activeEditor.setContent('');
+	q('.autorresponder-edit-title').value = '';
+	q('.autorresponder-edit-order').value = '';
 };

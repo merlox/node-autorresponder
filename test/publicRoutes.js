@@ -120,27 +120,48 @@ describe('Autorresponders', () => {
 				});
 		});
 
-		it('should post an autorresponder without order', cb => {
+		it('should post an autorresponder without order and set it\'s order +1 bigger than the biggest one', cb => {
 			const autorresponder = {
 				title: 'Este es un buen ejemplo de autorresponder',
 				content: 'Este es el contenido del autorresponder',
 				category: 'coches'
 			};
+			const insertAutorresponders = [{
+				title: 'Example of a good title',
+				content: 'Example of good content',
+				category: 'coches',
+				order: 5
+			}, {
+				title: 'Another example of a good title',
+				content: 'Anothere example of good content',
+				category: 'coches',
+				order: 8
+			}]
 
-			db.collection('autorrespondersCategory').insert({
-				name: 'coches'
-			}, err => {
-				chai.request(server)
-					.post('/autorresponder/add-autorresponder')
-					.send(autorresponder)
-					.end((err, res) => {
-						res.should.have.status(200);
-						res.body.should.be.a('object');
-						res.body.should.have.property('err');
-						res.body.should.have.property('err').eql(null);
+			db.collection('autorresponders').insert(insertAutorresponders, err => {
+				db.collection('autorrespondersCategory').insert({
+					name: 'coches'
+				}, err => {
+					chai.request(server)
+						.post('/autorresponder/add-autorresponder')
+						.send(autorresponder)
+						.end((err, res) => {
+							res.should.have.status(200);
+							res.body.should.be.a('object');
+							res.body.should.have.property('err');
+							res.body.should.have.property('err').eql(null);
 
-						cb();
-					});
+							db.collection('autorresponders').find({
+								category: autorresponder.category
+							}).sort({
+								order: -1
+							}).limit(1).toArray((err, autorrespondersFound) => {
+								assert.equal(autorrespondersFound[0].order, insertAutorresponders[1].order+1);
+
+								cb();
+							});
+						});
+				});
 			});
 		});
 
@@ -274,13 +295,13 @@ describe('Autorresponders', () => {
 				title: 'Adios',
 				content: 'Este es el contenido del autorresponder',
 				category: 'coches',
-				order: 5
+				order: 1
 			};
 
 			db.collection('autorresponders').insert(autorresponders, err => {
 				chai.request(server)
 					.post(`/autorresponder/edit-autorresponder/${_id}`)
-					.send(autorresponders[0])
+					.send(autorresponderEdit)
 					.end((err, res) => {
 						res.should.have.status(200);
 						res.body.should.be.a('object');

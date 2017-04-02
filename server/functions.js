@@ -227,10 +227,15 @@ function addAutorresponder(autorresponder, cb){
 
 		// If no order has been set, insert it at the end of the category order
 		if(!updateOrder){
+			let setOrderTo1NoBiggerFound = false;
+
 			db.collection('autorresponders').find({
 				category: autorresponder.category
-			}).count((err, count) => {
+			}).sort({
+				order: -1
+			}).limit(1).toArray((err, autorrespondersFound) => {
 				if(err) return cb(`#14 Error adding autorresponder to the category ${autorresponder.category}`);
+				if(!autorrespondersFound) setOrderTo1NoBiggerFound = true;
 				
 				checkIfRepeated(autorresponder, (err, isRepeated) => {
 					if(err) return cb(err);
@@ -241,7 +246,7 @@ function addAutorresponder(autorresponder, cb){
 						title: autorresponder.title,
 						content: autorresponder.content,
 						created: new Date().getTime(),
-						order: ++count
+						order: (setOrderTo1NoBiggerFound) ? 1 : ++autorrespondersFound[0].order
 					}, err => {
 						if(err) return cb(`#15 Could not add autorresponder to the category ${autorresponder.category}`);
 
@@ -312,7 +317,8 @@ function editAutorresponder(_id, autorresponder, cb){
 		return cb(`#64 The autorresponder content cannot be empty`);
 
 	if(autorresponder.order != null && autorresponder.order > 0){
-		newAutorresponder['order'] = parseInt(autorresponder.order);
+		autorresponder.order = parseInt(autorresponder.order);
+		newAutorresponder['order'] = autorresponder.order;
 		updateOrder = true;
 	}else if(autorresponder.order != null && autorresponder.order <= 0)
 		return cb(`#55 The order of the autorresponder must be bigger than 0`);
