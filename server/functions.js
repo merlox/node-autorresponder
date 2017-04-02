@@ -351,11 +351,17 @@ function editAutorresponder(_id, autorresponder, cb){
 				if(err) return cb(`#16 Could not update the autorresponder ${_id.toHexString()}`);
 
 				if(updateOrder){
-					utilIncreaseOrderNextAutorresponders(_id, err => {
-						if(err) return cb(err);
 
+					// Do not increase the order of the next autorresponders if the updated one haven't changed
+					if(autorresponder.order === autorresponderFound.order){
 						cb(null);
-					});
+					}else{
+						utilIncreaseOrderNextAutorresponders(_id, err => {
+							if(err) return cb(err);
+
+							cb(null);
+						});
+					}
 				}else{
 					cb(null);
 				}

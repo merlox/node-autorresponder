@@ -21,6 +21,11 @@ if(process.env.NODE_ENV != 'test'){
 
 app.use('/autorresponder', publicRoutes);
 
+// Send 404 not found to the routes not handled by /autorresponder
+app.use((req, res, next) => {
+	return res.status(404).send(`Cannot find ${req.originalUrl}`);
+});
+
 checkConfigUser(err => {
 	if(err){
 		console.log(err);

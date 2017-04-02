@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Autorresponder</title>
+	<link href="https://fonts.googleapis.com/css?family=Lato:700|Open+Sans" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body>
+
+	<div class="overlay">
+		<div class="autorresponder-edit">
+			<input type="hidden" class="autorresponder-edit-id" />
+			<input type="hidden" class="autorresponder-edit-category" />
+			<input type="text" class="autorresponder-edit-title" placeholder="Title" />
+			<textarea name="autorresponder-edit-content"></textarea>
+			<input type="number" class="autorresponder-edit-order" placeholder="Order" />
+			<button type="submit" class="autorresponder-edit-submit">Update autorresponder</button>
+		</div>
+
+		<div class="autorresponder-email">
+			<table border="0" cellpadding="0" cellspacing="0" width="100%">
+				<tr>
+					<td>
+						<table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; border: 5px solid #F1F1F1; background-color: white;">
+							<tr>
+								<td align="center">
+									<img src="cid:imagenEmail" alt="factura" width="500" height="100" style="display: block; padding-top: 20px;">
+								</td>
+							</tr>
+							<tr>
+								<td style="padding: 30px 45px 30px 45px">
+								
+								<div class="autorresponder-view-content"></div>
+
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+	<div class="container">
+		<h1 class="container-title">Node Autorresponder</h1>
+
+		<div class="container-categories"></div>
+
+	</div>
+
+	<script src="utils.js" type="text/javascript"></script>
+	<script src="index.js" type="text/javascript"></script>
+	<script src="//cloud.tinymce.com/stable/tinymce.min.js?apiKey=p8p0mrneet23k0k9kirbosin9zaafdgny9q2s5t03944qrwa"></script>
+  	<script>tinymce.init({ 
+  		selector: 'textarea',
+  		max_width: 800,
+  		height: 400,
+  		menubar: false,
+  		plugins: 'code',
+  		toolbar: 'styleselect bold italic alignleft aligncenter alignright bullist numlist code',
+	});</script>
+</body>
+</html>
+
+<!-- Category example
+
+<div class="category">
+	<div class="category-header">
+		<h3>Example</h3>
+		<span>3497 Subs</span>
+	</div>
+	<ul class="category-autorresponders">
+		<li>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui. Cras ultricies ligula sed magna dictum porta.
+			<ul class="category-autorresponder-actions">
+				<li>View</li>
+				<li>Edit</li>
+				<li>Delete</li>
+			</ul>
+		</li>
+		<li>Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a. Pellentesque in ipsum id orci porta dapibus.</li>
+		<li>Nulla porttitor accumsan tincidunt. Curabitur non nulla sit amet nisl tempus convallis quis ac lectus.</li>
+		<li>Curabitur non nulla sit amet nisl tempus convallis quis ac lectus. Praesent sapien massa, convallis a pellentesque nec, egestas non nisi.</li>
+		<li>Nulla porttitor accumsan tincidunt. Curabitur non nulla sit amet nisl tempus convallis quis ac lectus.</li>
+	</ul>
+</div>	
+
+-->

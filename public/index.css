@@ -1,0 +1,117 @@
+*{
+	box-sizing: border-box;
+}
+body{
+	margin: 0;
+	font-family: 'open sans';
+}
+h1, h2, h3, h4, h5, h6{
+	font-family: 'lato';
+}
+h3, h4, h5, h6{
+	text-transform: uppercase;
+}
+.error{
+	background-color: tomato;
+	color: white;
+	text-align: center;
+	padding: 20px;
+}
+
+.overlay{
+	display: none;
+	padding: 20px;
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.85);
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}
+.autorresponder-edit{
+	display: none;
+	max-width: 800px;
+	margin: auto;
+}
+.autorresponder-edit-title{
+	width: 100%;
+    display: block;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 12pt;
+}
+.autorresponder-edit-order{
+    display: block;
+    margin: 10px 0;
+    padding: 10px;
+    font-size: 12pt;	
+}
+.autorresponder-email{
+	display: none;
+	max-width: 800px;
+	margin: auto;
+}
+
+.container{
+	background-color: whitesmoke;
+	padding: 5px;
+	height: 100vh;
+}
+
+.category{
+	width: 350px;
+	border: 2px solid lightgrey;
+	display: inline-block;
+    vertical-align: top;
+    background-color: white;
+}
+.category:not(:first-child){
+	margin-left: 5px;
+}
+.category-header{
+	display: flex;
+	justify-content: space-between;
+	border-bottom: 2px solid lightgrey;
+	padding: 15px;
+}
+.category-header h3{
+	margin: 0;
+}
+.category-no-autorresponders{
+	padding: 20px;
+	color: darkgrey;
+	text-align: center;
+}
+.category-autorresponders{
+	margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+.category-autorresponders > li{
+	padding: 10px;
+	position: relative;
+}
+.category-autorresponder-actions{
+    display: none;
+    justify-content: space-around;
+    align-items: center;
+    list-style-type: none;
+    padding: 0;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
+    height: 100%;
+}
+.category-autorresponder-actions li{
+	display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+	width: calc(100% / 3);
+	background-color: #a51b1b;
+    color: white;
+    cursor: pointer;
+}
+.category-autorresponder-actions li:hover{
+	background-color: #721010;
+}

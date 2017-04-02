@@ -254,6 +254,54 @@ describe('Autorresponders', () => {
 			});
 		});
 
+		it(`should not edit the order of the next autorresponders if the updated haven't changed`, cb => {
+			const _id = new ObjectId();
+			const _id2 = new ObjectId();
+			const autorresponders = [{
+				_id: _id,
+				title: 'Este es un autorresponder genérico',
+				content: 'Este es el contenido del autorresponder',
+				category: 'coches',
+				order: 2
+			}, {
+				_id: _id2,
+				title: 'this es un autorresponder genérico',
+				content: 'Este es el contenido del autorresponder',
+				category: 'coches',
+				order: 3
+			}];
+			const autorresponderEdit = {
+				title: 'Adios',
+				content: 'Este es el contenido del autorresponder',
+				category: 'coches',
+				order: 5
+			};
+
+			db.collection('autorresponders').insert(autorresponders, err => {
+				chai.request(server)
+					.post(`/autorresponder/edit-autorresponder/${_id}`)
+					.send(autorresponders[0])
+					.end((err, res) => {
+						res.should.have.status(200);
+						res.body.should.be.a('object');
+						res.body.should.have.property('err');
+						res.body.should.have.property('err').eql(null);
+
+						db.collection('autorresponders').find({
+							_id: {
+								$in: [_id, _id2]
+							}
+						}, (err, autorrespondersFound) => {
+							for(let i = 0; i < autorrespondersFound.length; i++){
+								assert.equal(autorresponders[i].order, autorrespondersFound[i].order);
+							}
+
+							cb();
+						});
+					});
+			});
+		});
+
 		it('should edit an autorresponder', cb => {
 			const _id = new ObjectId();
 			const autorresponder = {
