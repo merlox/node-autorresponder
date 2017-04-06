@@ -27,7 +27,13 @@ h3, h4, h5, h6{
     height: 100%;
     z-index: 10;
 }
-.autorresponder-edit{
+.overlay-category-add{
+	display: none;
+}
+.overlay-category-edit{
+	display: none;
+}
+.overlay-autorresponder-edit{
 	display: none;
 	max-width: 800px;
 	margin: auto;
@@ -45,7 +51,7 @@ h3, h4, h5, h6{
     padding: 10px;
     font-size: 12pt;	
 }
-.autorresponder-email{
+.overlay-autorresponder-email{
 	display: none;
 	max-width: 800px;
 	margin: auto;
@@ -59,6 +65,13 @@ h3, h4, h5, h6{
 	padding: 5px;
 	height: 100vh;
 }
+.container-title{
+	display: inline-block;
+}
+.container-category-actions{
+	display: inline-block;
+	margin-left: 43px;
+}
 
 .category{
 	width: 350px;
@@ -66,9 +79,8 @@ h3, h4, h5, h6{
 	display: inline-block;
     vertical-align: top;
     background-color: white;
-}
-.category:not(:first-child){
-	margin-left: 5px;
+    margin-top: 5px;
+    margin-right: 5px;
 }
 .category-header{
 	display: flex;
@@ -78,6 +90,13 @@ h3, h4, h5, h6{
 }
 .category-header h3{
 	margin: 0;
+}
+.category-edit-container{
+	display: none;
+	align-items: center;
+}
+.category-edit-container > *{
+	margin-right: 5px;
 }
 .category-no-autorresponders{
 	padding: 20px;

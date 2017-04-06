@@ -235,7 +235,7 @@ function addAutorresponder(autorresponder, cb){
 				order: -1
 			}).limit(1).toArray((err, autorrespondersFound) => {
 				if(err) return cb(`#14 Error adding autorresponder to the category ${autorresponder.category}`);
-				if(!autorrespondersFound) setOrderTo1NoBiggerFound = true;
+				if(!autorrespondersFound || autorrespondersFound.length === 0) setOrderTo1NoBiggerFound = true;
 				
 				checkIfRepeated(autorresponder, (err, isRepeated) => {
 					if(err) return cb(err);
