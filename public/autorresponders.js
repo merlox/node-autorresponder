@@ -4,7 +4,6 @@
 listenAll('.overlay-autorresponder-email, .overlay-autorresponder-edit', 'click', (e) => {
 	e.stopPropagation();
 });
-listen('.overlay', 'click', hideOverlay);
 listen('.autorresponder-edit-submit', 'click', updateAutorresponder);
 listen('.autorresponder-add-submit', 'click', addAutorresponder);
 
@@ -118,12 +117,6 @@ function addAutorresponder(){
 
 		reloadCategories();
 	});
-};
-
-function hideOverlay(){
-	q('.overlay').style.display = 'none';
-	q('.overlay-autorresponder-email').style.display = 'none';
-	q('.overlay-autorresponder-edit').style.display = 'block';
 };
 
 function resetAutorresponderFields(){

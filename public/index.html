@@ -13,7 +13,18 @@
 <body>
 
 	<div class="overlay">
-		<div class="overlay-category-add"></div>
+		<div class="overlay-category-confirm-delete">
+			<p></p>
+			<button>Yes</button>
+			<button>No</button>
+		</div>
+
+		<div class="overlay-category-add">
+			<form onsubmit="event.preventDefault(); return false;">
+				<input type="text" placeholder="New category name" />
+				<input type="submit" class="category-add-new" value="Create new category" />
+			</form>
+		</div>
 
 		<div class="overlay-category-edit"></div>
 

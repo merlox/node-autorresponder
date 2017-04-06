@@ -29,6 +29,10 @@ h3, h4, h5, h6{
 }
 .overlay-category-add{
 	display: none;
+	text-align: center;
+}
+.overlay-category-add input{
+	padding: 10px 30px;
 }
 .overlay-category-edit{
 	display: none;
@@ -97,6 +101,13 @@ h3, h4, h5, h6{
 }
 .category-edit-container > *{
 	margin-right: 5px;
+}
+.category-remove-icon{
+	text-decoration: none;
+	color: darkgrey;
+}
+.category-remove-icon:hover{
+	color: darkred;
 }
 .category-no-autorresponders{
 	padding: 20px;

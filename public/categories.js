@@ -1,30 +1,50 @@
 'use strict';
 
 // Category listeners
-listen('.category-add', 'click', categoryAdd);
+listen('.category-add', 'click', categoryShowOverlayAdd);
 listen('.category-edit', 'click', categoryEdit);
 listen('.category-remove', 'click', categoryRemove);
+listen('.category-add-new', 'click', categoryCreate);
+listen('.overlay-category-add input', 'click', (e) => {
+	e.stopPropagation();
+});
 
-function categoryAdd(){
+function categoryShowOverlayAdd(){
 	q('.overlay-category-add').style.display = 'block';
 	q('.overlay').style.display = 'block';
 };
 
-function categoryEdit(){
+function categoryCreate(){
+	const name = q('.overlay-category-add input').value;
+
+	if(name != null && name.length > 0){
+		httpGet(`/autorresponder/add-category/${name}`, (err, response) => {
+			if(err) return error(err);
+			if(response.err) return error(response.err);
+
+			httpGet(`/autorresponder/get-category/${name}`, (err, response) => {
+				if(err) return error(err);
+				if(response.err) return error(response.err);
+
+				const newCategory = new Category(response._id, name, [], []);
+				categories.push(newCategory);
+				q('.overlay-category-add input').value = '';
+			});
+		});
+	}
+};
+
+function categoryEdit(id, name){
 
 };
 
-function categoryRemove(){
-
+function promptConfirmDelete(id, name){
+	q('.overlay-category-confirm-delete').style.display = 'block';
+	q('.overlay-category-confirm-delete p').innerHTML = `Confirm delete of: ${name} ?`;
 };
 
-function categorySetName(){
-	httpGet(`/autorresponder/add-category/${input.value}`, (err, response) => {
-		if(err) return error(err);
-		if(response.err) return error(response.err);
+function categoryRemove(id, name){
 
-		console.log(response);
-	});
 };
 
 // Category object
@@ -42,15 +62,11 @@ function Category(_id, name, autorresponders, subscribers){
 			`<div class="category" id="${that._id}">
 				<div class="category-header">
 					<h3>${that.name}</h3>
-					
-					<div class="category-edit-container">
-						<input type="text" class="category-edit-input"/>
-						<button class="category-edit-input-ok">Ok</button>
-						<button class="category-edit-input-cancel">X</button>
-					</div>
-
 					<span>${that.subscribers.length} Subs</span>
-					<button class="category-add-autorresponder">Add</button>
+					<button class="category-add-autorresponder" onclick="loadAutorresponderAdd">Add</button>
+					<a href="javascript:void(0)" onclick="promptConfirmDelete('${that._id}', '${that.name}');" class="category-remove-icon">
+						✕
+					</a>
 				</div>
 				<ul class="category-autorresponders">`;
 
@@ -67,7 +83,10 @@ function Category(_id, name, autorresponders, subscribers){
 				const autorresponder = that.autorresponders[j];
 
 				categoryHTML += 
-					`<li>${autorresponder.order} ${autorresponder.title}
+					`<li onmouseenter="showActionsAutorresponder" 
+						 onmouseleave="hideActionsAutorresponder"
+						 onclick="clickActionsAutorresponder">
+						${autorresponder.order} ${autorresponder.title}
 						<input type="hidden" class="autorresponder-id" 
 							value="${autorresponder._id}"/>
 						<ul class="category-autorresponder-actions">
@@ -81,32 +100,12 @@ function Category(_id, name, autorresponders, subscribers){
 
 		categoryHTML += `</ul></div>`;
 
-		q('.container-categories').innerHTML += categoryHTML;
-
-		setListeners();
+		q('.container-categories').innerHTML += categoryHTML;		
 	};
 
-	function setListeners(){
+	function deleteC(){
 
-		if(that.autorresponders.length > 0){
-			listenAll(`${that._id} .category-autorresponders > li`, 'mouseenter', () => {
-				console.log('called')
-				showActionsAutorresponder();
-			});
-			listenAll(`${that._id} .category-autorresponders > li`, 'mouseleave', hideActionsAutorresponder);
-			listenAll(`${that._id} .category-autorresponders > li`, 'click', clickActionsAutorresponder);
-		}
-		listenAll(`${that._id} .category-add-autorresponder`, 'click', loadAutorresponderAdd);
+		// Todo add modal asking for confimation
+		q(`${that._id}`).remove();
 	};
-
-	// function update(){
-	// 	// that.delete();
-	// 	init();
-	// };
-
-	// function delete(){
-
-	// 	// Todo add modal asking for confimation
-	// 	q(`${that._id}`).remove();
-	// };
 };
