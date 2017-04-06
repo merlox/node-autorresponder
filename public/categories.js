@@ -2,20 +2,19 @@
 
 let idEdit;
 let idDelete;
+let editMode = false;
 
 // Category listeners
 listen('.category-add', 'click', categoryShowOverlayAdd);
-listen('.category-edit', 'click', categoryActivateEditMode);
+listen('.category-edit', 'click', () => {
+	editMode = true;
+});
 listen('.category-add-new', 'click', categoryCreate);
 listen('.overlay-category-add input', 'click', (e) => {
 	e.stopPropagation();
 });
 listen('.overlay-category-confirm-delete-yes', 'click', categoryRemove);
 listen('.overlay-category-edit-name input', 'click', categoryEdit);
-
-function categoryActivateEditMode(){
-
-};
 
 function categoryShowOverlayAdd(){
 	q('.overlay-category-add').style.display = 'block';
@@ -24,10 +23,12 @@ function categoryShowOverlayAdd(){
 };
 
 function categoryShowOverlayEdit(e){
-	console.log(e.target);
-	q('.overlay-category-edit-name').style.display = 'block';
-	q('.overlay-category-edit-name input').focus();
-	q('.overlay').style.display = 'block';
+	if(editMode){
+		console.log(e.target);
+		q('.overlay-category-edit-name').style.display = 'block';
+		q('.overlay-category-edit-name input').focus();
+		q('.overlay').style.display = 'block';
+	}
 };
 
 function categoryCreate(){
@@ -80,6 +81,14 @@ function categoryRemove(){
 	});
 };
 
+function showEditCategoryOverlay(e){
+	e.target.querySelector('.category-overlay-edit').style.display = 'block';
+};
+
+function hideEditCategoryOverlay(e){
+	e.target.querySelector('.category-overlay-edit').style.display = 'none';	
+};
+
 // Category object
 function Category(_id, name, autorresponders, subscribers){
 	this._id = 'id_'+_id; // Must start with a char to allow query selectors
@@ -92,7 +101,11 @@ function Category(_id, name, autorresponders, subscribers){
 
 	function init(){
 		let categoryHTML = 
-			`<div class="category" id="${that._id}">
+			`<div class="category" id="${that._id}" 
+				onmouseenter="showEditCategoryOverlay(event)"
+				onmouseleave="hideEditCategoryOverlay(event)"
+				onclick="categoryShowOverlayEdit(event)">
+
 				<div class="category-header">
 					<h3>${that.name}</h3>
 					<span>${that.subscribers.length} Subs</span>
