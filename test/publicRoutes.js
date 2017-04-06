@@ -632,13 +632,13 @@ describe('Category', () => {
 
 	describe('REMOVE Category', () => {
 		it('should remove a category', cb => {
-			const categoryName = 'example';
+			const _id = new ObjectId();
 
 			db.collection('autorrespondersCategory').insert({
-				name: categoryName
+				_id: _id
 			}, err => {
 				chai.request(server)
-					.get(`/autorresponder/remove-category/${categoryName}`)
+					.get(`/autorresponder/remove-category/${_id}`)
 					.end((err, res) => {
 						res.should.have.status(200);
 						res.body.should.be.a('object');
@@ -651,10 +651,10 @@ describe('Category', () => {
 		});
 
 		it('should not remove a non-existing category', cb => {
-			const categoryName = 'example';
+			const _id = new ObjectId();
 
 			chai.request(server)
-				.get(`/autorresponder/remove-category/${categoryName}`)
+				.get(`/autorresponder/remove-category/${_id}`)
 				.end((err, res) => {
 					res.should.have.status(200);
 					res.body.should.be.a('object');
@@ -667,19 +667,19 @@ describe('Category', () => {
 
 		it('should backup the category to the autorrespondersDeletedCategories', cb => {
 			const category = {
-				name: 'examplex'
+				_id: new ObjectId()
 			};
 
 			db.collection('autorrespondersCategory').insert(category, err => {
 				chai.request(server)
-					.get(`/autorresponder/remove-category/${category.name}`)
+					.get(`/autorresponder/remove-category/${category._id}`)
 					.end((err, res) => {
 						res.should.have.status(200);
 
 						db.collection('autorrespondersDeletedCategories').findOne({
-							name: category.name
+							_id: category._id
 						}, (err, categoryFound) => {
-							assert.equal(category.name, categoryFound.name);
+							assert.equal(category._id.toHexString(), categoryFound._id.toHexString());
 
 							cb();
 						});

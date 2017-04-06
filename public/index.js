@@ -16,7 +16,6 @@ function getCategories(){
 
 			categories.push(theCategory);
 		}
-
 	});
 };
 
@@ -33,4 +32,5 @@ function hideOverlay(){
 	q('.overlay-autorresponder-edit').style.display = 'none';
 	q('.overlay-category-add').style.display = 'none';
 	q('.overlay-category-confirm-delete').style.display = 'none';
+	q('.overlay-category-edit-name').style.display = 'none';
 };

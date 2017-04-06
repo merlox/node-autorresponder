@@ -171,20 +171,21 @@ function editCategory(categoryName, newCategoryName, cb){
  * Moves a category to the 'autorrespondersDeletedCategories' 
  * then it removes the category from the 'autorrespondersCategory' database
  */
-function removeCategory(categoryName, cb){
+function removeCategory(_id, cb){
+	_id = utilToObjectId(_id);
 	db.collection('autorrespondersCategory').findOne({
-		name: categoryName
+		_id: _id
 	}, (err, categoryFound) => {
-		if(err) return cb(`#6 Error searching for that category ${categoryName}`);
-		if(!categoryFound) return cb(`#7 Could not find that category ${categoryName}`);
+		if(err) return cb(`#6 Error searching for that category ${_id}`);
+		if(!categoryFound) return cb(`#7 Could not find the category ${_id}`);
 
 		db.collection('autorrespondersDeletedCategories').insert(categoryFound, err => {
-			if(err) return cb(`#8 Error deleting the category ${categoryName}`);
+			if(err) return cb(`#8 Error deleting the category ${_id}`);
 
 			db.collection('autorrespondersCategory').remove({
-				name: categoryName
+				_id: _id
 			}, err => {
-				if(err) return cb(`#9 Error deleting the category ${categoryName}`);
+				if(err) return cb(`#9 Error deleting the category ${_id}`);
 
 				cb(null);
 			});

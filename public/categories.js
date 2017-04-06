@@ -1,16 +1,32 @@
 'use strict';
 
+let idEdit;
+let idDelete;
+
 // Category listeners
 listen('.category-add', 'click', categoryShowOverlayAdd);
-listen('.category-edit', 'click', categoryEdit);
-listen('.category-remove', 'click', categoryRemove);
+listen('.category-edit', 'click', categoryActivateEditMode);
 listen('.category-add-new', 'click', categoryCreate);
 listen('.overlay-category-add input', 'click', (e) => {
 	e.stopPropagation();
 });
+listen('.overlay-category-confirm-delete-yes', 'click', categoryRemove);
+listen('.overlay-category-edit-name input', 'click', categoryEdit);
+
+function categoryActivateEditMode(){
+
+};
 
 function categoryShowOverlayAdd(){
 	q('.overlay-category-add').style.display = 'block';
+	q('.overlay-category-add input').focus();
+	q('.overlay').style.display = 'block';
+};
+
+function categoryShowOverlayEdit(e){
+	console.log(e.target);
+	q('.overlay-category-edit-name').style.display = 'block';
+	q('.overlay-category-edit-name input').focus();
 	q('.overlay').style.display = 'block';
 };
 
@@ -34,17 +50,34 @@ function categoryCreate(){
 	}
 };
 
-function categoryEdit(id, name){
+function categoryEdit(){
+	const input = q('.overlay-category-edit-name input');
 
+	if(input != null && input.value.length > 0){
+		httpPost(`/autorresponder/edit-category/${idEdit.substring(3)}`, input.value, (err, response) => {
+			if(err) return error(err);
+			if(response.err) return error(response.err);
+
+			console.log(response);
+		});
+	}
 };
 
 function promptConfirmDelete(id, name){
+	idDelete = id;
 	q('.overlay-category-confirm-delete').style.display = 'block';
 	q('.overlay-category-confirm-delete p').innerHTML = `Confirm delete of: ${name} ?`;
+	q('.overlay').style.display = 'block';
 };
 
-function categoryRemove(id, name){
+function categoryRemove(){
+	const correctId = idDelete.substring(3);
+	httpGet(`/autorresponder/remove-category/${correctId}`, (err, response) => {
+		if(err) return error(err);
+		if(response.err) return error(response.err);
 
+		q(`#${idDelete}`).remove();
+	});
 };
 
 // Category object
@@ -63,7 +96,7 @@ function Category(_id, name, autorresponders, subscribers){
 				<div class="category-header">
 					<h3>${that.name}</h3>
 					<span>${that.subscribers.length} Subs</span>
-					<button class="category-add-autorresponder" onclick="loadAutorresponderAdd">Add</button>
+					<button onclick="loadAutorresponderAdd(event)" class="category-add-autorresponder">Add</button>
 					<a href="javascript:void(0)" onclick="promptConfirmDelete('${that._id}', '${that.name}');" class="category-remove-icon">
 						✕
 					</a>
@@ -83,9 +116,9 @@ function Category(_id, name, autorresponders, subscribers){
 				const autorresponder = that.autorresponders[j];
 
 				categoryHTML += 
-					`<li onmouseenter="showActionsAutorresponder" 
-						 onmouseleave="hideActionsAutorresponder"
-						 onclick="clickActionsAutorresponder">
+					`<li onmouseenter="showActionsAutorresponder(event)" 
+						 onmouseleave="hideActionsAutorresponder(event)"
+						 onclick="clickActionsAutorresponder(event)">
 						${autorresponder.order} ${autorresponder.title}
 						<input type="hidden" class="autorresponder-id" 
 							value="${autorresponder._id}"/>
@@ -98,7 +131,8 @@ function Category(_id, name, autorresponders, subscribers){
 			}
 		}
 
-		categoryHTML += `</ul></div>`;
+		categoryHTML += `</ul>
+			<div class="category-overlay-edit"></div></div>`;
 
 		q('.container-categories').innerHTML += categoryHTML;		
 	};

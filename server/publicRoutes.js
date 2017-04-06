@@ -86,13 +86,13 @@ router.post('/edit-category/', (req, res) => {
 });
 
 // Moves the category to the 'autorrespondersDeletedCategories' database as a backup instead of deleting it
-router.get('/remove-category/:categoryName', (req, res) => {
-	const categoryName = req.params.categoryName;
+router.get('/remove-category/:_id', (req, res) => {
+	const _id = req.params._id;
 	const response = {
 		err: null
 	};
 
-	functions.removeCategory(categoryName, err => {
+	functions.removeCategory(_id, err => {
 		if(err) response.err = err;
 
 		res.send(response);

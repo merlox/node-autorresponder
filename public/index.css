@@ -34,6 +34,19 @@ h3, h4, h5, h6{
 .overlay-category-add input{
 	padding: 10px 30px;
 }
+.overlay-category-confirm-delete{
+	display: none;
+	background-color: white;
+	padding: 40px;
+	text-align: center;
+}
+.overlay-category-edit-name{
+	display: none;
+	text-align: center;
+}
+.overlay-category-edit-name input{
+	padding: 10px 30px;
+}
 .overlay-category-edit{
 	display: none;
 }
