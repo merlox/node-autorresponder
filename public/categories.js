@@ -1,20 +1,21 @@
 'use strict';
 
 let idEdit;
+let editName;
 let idDelete;
 let editMode = false;
 
 // Category listeners
 listen('.category-add', 'click', categoryShowOverlayAdd);
 listen('.category-edit', 'click', () => {
-	editMode = true;
+	editMode = !editMode;
 });
 listen('.category-add-new', 'click', categoryCreate);
-listen('.overlay-category-add input', 'click', (e) => {
+listenAll('.overlay-category-add input, .overlay-category-edit-name input', 'click', (e) => {
 	e.stopPropagation();
 });
 listen('.overlay-category-confirm-delete-yes', 'click', categoryRemove);
-listen('.overlay-category-edit-name input', 'click', categoryEdit);
+listen('.overlay-category-edit-name-confirm', 'click', categoryEdit);
 
 function categoryShowOverlayAdd(){
 	q('.overlay-category-add').style.display = 'block';
@@ -23,12 +24,13 @@ function categoryShowOverlayAdd(){
 };
 
 function categoryShowOverlayEdit(e){
-	if(editMode){
-		console.log(e.target);
-		q('.overlay-category-edit-name').style.display = 'block';
-		q('.overlay-category-edit-name input').focus();
-		q('.overlay').style.display = 'block';
-	}
+	idEdit = e.target.parentNode.id.substring(3);
+	editName = e.target.parentNode.querySelector('.categ-name').innerHTML;
+
+	q('.overlay-category-edit-name').style.display = 'block';
+	q('.overlay-category-edit-name input').value = editName;
+	q('.overlay-category-edit-name input').focus();	
+	q('.overlay').style.display = 'block';
 };
 
 function categoryCreate(){
@@ -51,15 +53,21 @@ function categoryCreate(){
 	}
 };
 
+// To confirm category edit name
 function categoryEdit(){
 	const input = q('.overlay-category-edit-name input');
+	const request = {
+		categoryName: editName,
+		newCategoryName: input.value
+	};
 
 	if(input != null && input.value.length > 0){
-		httpPost(`/autorresponder/edit-category/${idEdit.substring(3)}`, input.value, (err, response) => {
+		httpPost(`/autorresponder/edit-category/`, request, (err, response) => {
 			if(err) return error(err);
 			if(response.err) return error(response.err);
 
-			console.log(response);
+			reloadCategories();
+			editMode = false;
 		});
 	}
 };
@@ -81,12 +89,16 @@ function categoryRemove(){
 	});
 };
 
-function showEditCategoryOverlay(e){
-	e.target.querySelector('.category-overlay-edit').style.display = 'block';
+function showCategoryEditBox(e){
+	if(editMode){
+		e.target.querySelector('.category-overlay-edit').style.display = 'block';
+	}
 };
 
-function hideEditCategoryOverlay(e){
-	e.target.querySelector('.category-overlay-edit').style.display = 'none';	
+function hideCategoryEditBox(e){
+	if(editMode){
+		e.target.querySelector('.category-overlay-edit').style.display = 'none';	
+	}
 };
 
 // Category object
@@ -102,12 +114,11 @@ function Category(_id, name, autorresponders, subscribers){
 	function init(){
 		let categoryHTML = 
 			`<div class="category" id="${that._id}" 
-				onmouseenter="showEditCategoryOverlay(event)"
-				onmouseleave="hideEditCategoryOverlay(event)"
-				onclick="categoryShowOverlayEdit(event)">
+				onmouseenter="showCategoryEditBox(event)"
+				onmouseleave="hideCategoryEditBox(event)">
 
 				<div class="category-header">
-					<h3>${that.name}</h3>
+					<h3 class="categ-name">${that.name}</h3>
 					<span>${that.subscribers.length} Subs</span>
 					<button onclick="loadAutorresponderAdd(event)" class="category-add-autorresponder">Add</button>
 					<a href="javascript:void(0)" onclick="promptConfirmDelete('${that._id}', '${that.name}');" class="category-remove-icon">
@@ -145,7 +156,7 @@ function Category(_id, name, autorresponders, subscribers){
 		}
 
 		categoryHTML += `</ul>
-			<div class="category-overlay-edit"></div></div>`;
+			<div class="category-overlay-edit" onclick="categoryShowOverlayEdit(event)"></div></div>`;
 
 		q('.container-categories').innerHTML += categoryHTML;		
 	};
