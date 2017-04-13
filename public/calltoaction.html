@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Call to action</title>
+</head>
+<body>
+
+	<div class="subscriber-popup">
+		<style type="text/css">
+			.subscriber-container{
+				width: 300px;
+				background-color: white;
+				border: 1px solid lightgrey;
+				padding: 20px;
+				padding-top: 0;
+				text-align: center;
+			}
+			.subscriber-container-email{
+				padding: 10px;
+				border: 1px solid lightgrey;
+				border-radius: 4px;
+			}
+			.subscriber-container-email:focus, .subscriber-container-email:active{
+				border: 1px solid black;
+				font-weight: bold;
+			}
+			.subscriber-button-subscribe{
+				margin-top: 5px;
+				background-color: #ffd17d;
+				border: 0px;
+				padding: 10px;
+				border-radius: 4px;
+				cursor: pointer;
+			}
+			.subscriber-button-subscribe:hover{
+				background-color: #ffa500;
+			}
+			.subscriber-button-subscribe:active, .subscriber-button-subscribe:focus{
+				background-color: #F2A619;
+			}
+			.subscriber-error{
+				text-align: center;
+				background-color: tomato;
+				color: white;
+			}
+		</style>
+
+		<form class="subscriber-container" onsubmit="event.preventDefault(); return false;">
+			<h3>Subscribe to get the new guide</h3>
+			<p>Yes. Another one. This is the new guide that will help you get more subscribers beast mode.</p>
+			<input type="email" class="subscriber-container-email" placeholder="Your email here" />
+			<input 	type="submit" 
+					class="subscriber-button-subscribe" 
+					onclick="subscribe(event.target.parentNode.querySelector('.subscriber-container-email').value);" 
+					value="Subscribe now and get the guide"/>
+		</form>
+
+		<script type="text/javascript">
+			function httpPost(url, data, cb){
+				if(cb == undefined)
+					cb = () => {};	
+
+				if(typeof data != 'object')
+					return cb('The second parameter of the POST request must be an object', null);
+
+				let request = new XMLHttpRequest();
+				request.open('POST', url);
+				request.setRequestHeader('Content-type', 'application/json;charset=UTF-8');
+				request.addEventListener('readystatechange', () => {
+
+					if(request.readyState == XMLHttpRequest.DONE && request.status < 400){
+						let response = request.responseText;
+						let error = null;
+
+						try{
+							response = JSON.parse(response);
+						}catch(e){
+							error = `Could not parse the response of ${url}`;
+						}
+
+						cb(error, response);
+					}else if(request.readyState == XMLHttpRequest.DONE){
+						cb(request.responseText, null);      
+			      	}
+				});
+
+				request.send(JSON.stringify(data));	
+			};
+
+			function errorSubscriber(err){
+				errorTimeout = setTimeout(() => {
+					let html = `<div class="subscriber-error">${err}</div>`;
+
+					document.querySelector('.subscriber-container').insertAdjacentHTML('afterbegin', html);
+					setTimeout(() => {
+						q('.subscriber-error').remove();
+					}, 5e3);
+				}, 500);
+			};
+
+			function subscribe(email){
+
+				// If the email is correctly formated
+				if(/.+@.+\..+/.test(email)){
+					const subscriber = {
+						email: email,
+						category: 'merunas'
+					};
+
+					httpPost('/autorresponder/add-subscriber', subscriber, (err, response) => {
+						if(err) return errorSubscriber(err);
+						if(response.err) return errorSubscriber(response.err);
+
+						document.querySelector('.subscriber-container').innerHTML = '<h3>Thanks! An email has been sent.</h3>';
+					});
+				}
+			};
+		</script>
+	</div>
+</body>
+</html>

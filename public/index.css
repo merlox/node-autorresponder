@@ -76,6 +76,12 @@ h3, h4, h5, h6{
 .autorresponder-add-submit{
 	display: none;
 }
+.overlay-subscribers{
+	display: none;
+	text-align: center;
+	background-color: white;
+	list-style-type: none;
+}
 
 .container{
 	background-color: whitesmoke;

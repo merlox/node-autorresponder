@@ -418,6 +418,7 @@ function getSubscriber(_id, cb){
 	});
 };
 
+// Required subscriber.email and subscriber.category. Optional subscriber.name
 function addSubscriber(subscriber, cb){
 	if(!subscriber)
 		return cb(`#69 Subscriber data has not been received`);

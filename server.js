@@ -61,6 +61,7 @@ function checkConfigUser(done){
 				config['password'] = password;
 
 				fs.writeFile(path.join(__dirname, 'config', 'config.json'), JSON.stringify(config, null, 4), err => {
+					console.log('');
 					if(err){
 						const err = 'Error setting up the credentials, restart the application.'
 						console.log(err);

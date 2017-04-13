@@ -1,6 +1,9 @@
 Last error: 87
 
 
+CronAutorresponders
+Last error: #8
+
 Crear un servidor api que permita autorresponders node:
 
 - lista de suscriptores en diferentes categorias
