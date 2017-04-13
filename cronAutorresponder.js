@@ -17,6 +17,7 @@ else
 if(process.argv[2] === 'start'){
 	sendAutorresponders(response => {
 		console.log(response);
+		process.exit(0);
 	}); // On start send autorresponders
 }
 

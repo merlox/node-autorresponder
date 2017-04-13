@@ -82,6 +82,11 @@ h3, h4, h5, h6{
 	background-color: white;
 	list-style-type: none;
 }
+.overlay-subscribers-edit{
+	display: none;
+	background-color: white;
+	text-align: center;
+}
 
 .container{
 	background-color: whitesmoke;

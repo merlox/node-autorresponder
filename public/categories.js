@@ -101,33 +101,6 @@ function hideCategoryEditBox(e){
 	}
 };
 
-function showSubscribers(categoryName){
-	let subscribers;
-
-	for(let i = 0; i < categories.length; i++){
-		if(categories[i].name === categoryName){
-			subscribers = categories[i].subscribers;
-			break;
-		}
-	}
-
-	if(subscribers){
-		q('.overlay-subscribers').style.display = 'block';
-		q('.overlay').style.display = 'block';
-		let html = `<h3>${categoryName} - ${subscribers.length}</h3>`;
-
-		if(subscribers.length <= 0){
-			html = `There are no subscribers for the category: ${categoryName}`;
-		}else{
-			for(let i = 0; i < subscribers.length; i++){
-				html += `<li>${subscribers[i].email}</li>`;
-			}
-		}
-
-		q('.overlay-subscribers').innerHTML = html;
-	}
-};
-
 // Category object
 function Category(_id, name, autorresponders, subscribers){
 	this._id = 'id_'+_id; // Must start with a char to allow query selectors
@@ -146,7 +119,7 @@ function Category(_id, name, autorresponders, subscribers){
 
 				<div class="category-header">
 					<h3 class="categ-name">${that.name}</h3>
-					<a href="javascript:void(0)" onclick="showSubscribers('${that.name}')">${that.subscribers.length} Subs</a>
+					<a href="javascript:void(0)" onclick="subscribersShow('${that.name}')">${that.subscribers.length} Subs</a>
 					<button onclick="loadAutorresponderAdd(event)" class="category-add-autorresponder">Add</button>
 					<a href="javascript:void(0)" onclick="promptConfirmDelete('${that._id}', '${that.name}');" class="category-remove-icon">
 						✕

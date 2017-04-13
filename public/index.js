@@ -39,4 +39,5 @@ function hideOverlay(){
 	q('.overlay-category-confirm-delete').style.display = 'none';
 	q('.overlay-category-edit-name').style.display = 'none';
 	q('.overlay-subscribers').style.display = 'none';
+	q('.overlay-subscribers-edit').style.display = 'none';
 };
