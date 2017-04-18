@@ -14,16 +14,18 @@
 
 	<div class="overlay">
 
-		<div class="overlay-subscribers-edit">
-			<input type="hidden" class="overlay-subscribers-edit-id"/>
-			<input type="email" class="overlay-subscribers-edit-email"/>
-			<select class="overlay-subscribers-edit-category"></select>
+		<div class="subscribers-container">
+			<ul class="overlay-subscribers"></ul>
 
-			<button class="overlay-subscribers-edit-confirm">Confirm changes</button>
-			<button onclick="hideOverlay();">Cancel</button>
+			<div class="overlay-subscribers-edit">
+				<input type="hidden" class="overlay-subscribers-edit-id"/>
+				<input type="email" class="overlay-subscribers-edit-email"/>
+				<select class="overlay-subscribers-edit-category"></select>
+
+				<button class="overlay-subscribers-edit-confirm">Confirm changes</button>
+				<button onclick="hideOverlay();">Cancel</button>
+			</div>
 		</div>
-
-		<ul class="overlay-subscribers"></ul>
 
 		<div class="overlay-category-edit-name">
 			<input type="text" />
@@ -62,7 +64,7 @@
 						<table align="center" border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; border: 5px solid #F1F1F1; background-color: white;">
 							<tr>
 								<td align="center">
-									<img src="" alt="factura" width="500" height="100" style="display: block; padding-top: 20px;">
+									<img src="imgs/emailImage.jpg" alt="factura" width="500" height="100" style="display: block; padding-top: 20px;">
 								</td>
 							</tr>
 							<tr>

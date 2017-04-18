@@ -87,6 +87,9 @@ h3, h4, h5, h6{
 	background-color: white;
 	text-align: center;
 }
+.overlay-subscribers-edit-category{
+	background-color: white;
+}
 
 .container{
 	background-color: whitesmoke;

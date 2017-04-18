@@ -11,7 +11,7 @@ listen('.category-edit', 'click', () => {
 	editMode = !editMode;
 });
 listen('.category-add-new', 'click', categoryCreate);
-listenAll('.overlay-category-add input, .overlay-category-edit-name input, .overlay-subscribers', 'click', (e) => {
+listenAll('.overlay-category-add input, .overlay-category-edit-name input, .overlay-subscribers, .subscribers-container', 'click', (e) => {
 	e.stopPropagation();
 });
 listen('.overlay-category-confirm-delete-yes', 'click', categoryRemove);

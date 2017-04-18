@@ -491,23 +491,23 @@ function editSubscriber(_id, subscriber, cb){
 
 		if(checkExistingEmail && checkExistingCategory){
 			searchExistingEmail(err => {
-				return cb(err);
+				if(err) return cb(err);
 
 				searchExistingCategory(err => {
-					return cb(err);
+					if(err) return cb(err);
 
 					updateSubscriber();
 				});
 			});
 		}else if(checkExistingCategory){
 			searchExistingCategory(err => {
-				return cb(err);
+				if(err) return cb(err);
 
 				updateSubscriber();
 			});
 		}else if(checkExistingEmail){
 			searchExistingEmail(err => {
-				return cb(err);
+				if(err) return cb(err);
 
 				updateSubscriber();
 			});

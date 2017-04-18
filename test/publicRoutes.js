@@ -951,7 +951,7 @@ describe('Subscribers', () => {
 	});
 
 	describe('EDIT Subscriber', () => {
-		it('should edit an existing subscriber', cb => {
+		it('should edit an existing subscriber with a new email', cb => {
 			const _id = new ObjectId();
 			const subscriber = {
 				_id: _id,
@@ -960,6 +960,46 @@ describe('Subscribers', () => {
 			};
 			const subscriberEdit = {
 				email: 'emailNuevo@example.com',
+				category: 'newsletter'
+			};
+			const category = {
+				name: 'Conejo'
+			};
+
+			db.collection('autorrespondersCategory').insert(category, err => {
+				db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+					chai.request(server)
+						.post(`/autorresponder/edit-subscriber/${_id}`)
+						.send(subscriberEdit)
+						.end((err, res) => {
+							res.should.have.status(200);
+							res.body.should.be.a('object');
+							res.body.should.have.property('err');
+							res.body.should.have.property('err').eql(null);
+
+							db.collection('autorrespondersSubscribers').findOne({
+								email: 'emailNuevo@example.com'
+							}, (err, subscriberFound) => {
+								assert.equal(err, null);
+								assert.notEqual(subscriberFound, null);
+								subscriberFound.should.have.property('email');
+								subscriberFound.should.have.property('email').eql('emailNuevo@example.com');
+
+								cb();
+							});
+						});
+				});
+			});
+		});
+
+		it('should edit a subscriber with a new category', cb => {
+			const _id = new ObjectId();
+			const subscriber = {
+				_id: _id,
+				email: 'email@valid.com',
+				category: 'newsletter'
+			};
+			const subscriberEdit = {
 				category: 'Conejo'
 			};
 			const category = {
@@ -977,7 +1017,103 @@ describe('Subscribers', () => {
 							res.body.should.have.property('err');
 							res.body.should.have.property('err').eql(null);
 
-							cb();
+							db.collection('autorrespondersSubscribers').findOne({
+								email: 'email@valid.com'
+							}, (err, subscriberFound) => {
+								assert.equal(err, null);
+								subscriberFound.should.not.equals(null);
+								subscriberFound.should.be.a('object');
+								subscriberFound.should.have.property('category');
+								subscriberFound.should.have.property('category').eql('Conejo');
+
+								cb();
+							});
+						});
+				});
+			});
+		});
+
+		it('should edit a subscriber with a new name', cb => {
+			const _id = new ObjectId();
+			const subscriber = {
+				_id: _id,
+				email: 'email@valid.com',
+				category: 'newsletter'
+			};
+			const subscriberEdit = {
+				category: 'newsletter',
+				name: 'Pepe'
+			};
+			const category = {
+				name: 'Conejo'
+			};
+
+			db.collection('autorrespondersCategory').insert(category, err => {
+				db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+					chai.request(server)
+						.post(`/autorresponder/edit-subscriber/${_id}`)
+						.send(subscriberEdit)
+						.end((err, res) => {
+							res.should.have.status(200);
+							res.body.should.be.a('object');
+							res.body.should.have.property('err');
+							res.body.should.have.property('err').eql(null);
+
+							db.collection('autorrespondersSubscribers').findOne({
+								email: 'email@valid.com'
+							}, (err, subscriberFound) => {
+								assert.equal(err, null);
+								subscriberFound.should.not.equals(null);
+								subscriberFound.should.be.a('object');
+								subscriberFound.should.have.property('name');
+								subscriberFound.should.have.property('name').eql('Pepe');
+
+								cb();
+							});
+						});
+				});
+			});
+		});
+
+		it('should edit a subscriber with a new category and email', cb => {
+			const _id = new ObjectId();
+			const subscriber = {
+				_id: _id,
+				email: 'email@valid.com',
+				category: 'newsletter'
+			};
+			const subscriberEdit = {
+				email: 'newEmailThough@valid.com',
+				category: 'Conejo'
+			};
+			const category = {
+				name: 'Conejo'
+			};
+
+			db.collection('autorrespondersCategory').insert(category, err => {
+				db.collection('autorrespondersSubscribers').insert(subscriber, err => {
+					chai.request(server)
+						.post(`/autorresponder/edit-subscriber/${_id}`)
+						.send(subscriberEdit)
+						.end((err, res) => {
+							res.should.have.status(200);
+							res.body.should.be.a('object');
+							res.body.should.have.property('err');
+							res.body.should.have.property('err').eql(null);
+
+							db.collection('autorrespondersSubscribers').findOne({
+								email: 'newEmailThough@valid.com'
+							}, (err, subscriberFound) => {
+								assert.equal(err, null);
+								subscriberFound.should.not.equals(null);
+								subscriberFound.should.be.a('object');
+								subscriberFound.should.have.property('category');
+								subscriberFound.should.have.property('category').eql('Conejo');
+								subscriberFound.should.have.property('email');
+								subscriberFound.should.have.property('email').eql('newEmailThough@valid.com');
+
+								cb();
+							});
 						});
 				});
 			});

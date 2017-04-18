@@ -15,6 +15,8 @@ function getCategories(){
 			return a.name.toUpperCase().localeCompare(b.name.toUpperCase());
 		});
 
+		categories = []; // Reset categories
+
 		for(let i = 0; i < response.categories.length; i++){
 			const category = response.categories[i];
 			const theCategory = new Category(category._id, category.name, category.autorresponders, category.subscribers);
