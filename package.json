@@ -2,7 +2,7 @@
   "name": "node-autorresponder",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "author": "Merunas Grincalaitis",
   "license": "ISC",
   "dependencies": {
@@ -19,5 +19,11 @@
   "scripts": {
     "start": "SET NODE_ENV=dev && node server.js",
     "test": "mocha --timeout 10000"
-  }
+  },
+   "bin": "server.js",
+   "pkg": {
+      "assets": [
+         "public/**/*"
+      ]
+   }
 }

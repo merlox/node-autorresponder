@@ -2,9 +2,10 @@
 
 const router = require('express').Router();
 const functions = require('./functions.js');
+const path = require('path');
 
 /**
- * Things to note: 
+ * Things to note:
  * ► This plugin is written totally in english
  * ► A message is also called an autorresponder
  * ► Subscribers and autorresponders have categories
@@ -35,7 +36,7 @@ router.get('/get-all-categories/', (req, res) => {
 	functions.getAllCategories((err, categories) => {
 		if(err) response.err = err;
 		response.categories = categories;
-		
+
 		res.send(response);
 	});
 });
@@ -129,7 +130,7 @@ router.post('/add-autorresponder', (req, res) => {
 	const response = {
 		err: null
 	};
-	
+
 	functions.addAutorresponder(autorresponder, err => {
 		if(err) response.err = err;
 
@@ -149,7 +150,7 @@ router.post('/edit-autorresponder/:_id', (req, res) => {
 	const response = {
 		err: null
 	};
-	
+
 	functions.editAutorresponder(_id, autorresponder, err => {
 		if(err) response.err = err;
 
@@ -163,7 +164,7 @@ router.get('/remove-autorresponder/:_id', (req, res) => {
 	const response = {
 		err: null
 	};
-	
+
 	functions.deleteAutorresponder(_id, err => {
 		if(err) response.err = err;
 
@@ -171,7 +172,7 @@ router.get('/remove-autorresponder/:_id', (req, res) => {
 	});
 });
 
-/** 
+/**
  * CRUD Subscriber
  */
 
