@@ -6,9 +6,9 @@ const bodyParser = require('body-parser');
 const publicRoutes = require('./server/publicRoutes.js');
 const path = require('path');
 const fs = require('fs');
-const readline = require('readline');
+const shell = require('./shell/shell.js');
 
-app.use(express.static(path.join(__dirname, 'public/')));
+app.use('/autorresponder', express.static(path.join(__dirname, 'public/')));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -26,54 +26,18 @@ app.use((req, res, next) => {
 	return res.status(404).send(`Cannot find ${req.originalUrl}`);
 });
 
-checkConfigUser(err => {
+shell.checkArguments(err => {
 	if(err){
 		console.log(err);
 		process.exit(0);
 	}else{
-		app.listen(8888, '0.0.0.0', (req, res) => {
-			console.log('Listening on localhost:8888');
+		let configJSON = fs.readFileSync(path.join(__dirname, 'config', 'config.json'), 'utf-8');
+		configJSON = JSON.parse(configJSON);
+
+		app.listen(configJSON.port, configJSON.ip, (req, res) => {
+			console.log(`Listening on ${configJSON.ip}:${configJSON.port}/autorresponder`);
 		});
 	}
 });
 
 module.exports = app;
-
-function checkConfigUser(done){
-	const rl = readline.createInterface({
-		input: process.stdin,
-		output: process.stdout
-	});
-	let config = fs.readFileSync(path.join(__dirname, 'config', 'config.json'), 'utf-8');
-
-	config = JSON.parse(config);
-
-	if(!config.username || !config.password){
-		console.log('');
-		console.log('> This is the first time using the node-autorresponder app, so we will setup your username and password');
-		console.log('> Remember that if you forget the credentials, you can check the config/config.json file and change them anytime');
-		console.log('');
-
-		rl.question('> Write a new username (required for login): ', username => {
-			rl.question('> Write a new password (required for login): ', password => {
-				rl.close();
-				config['username'] = username;
-				config['password'] = password;
-
-				fs.writeFile(path.join(__dirname, 'config', 'config.json'), JSON.stringify(config, null, 4), err => {
-					console.log('');
-					if(err){
-						const err = 'Error setting up the credentials, restart the application.'
-						console.log(err);
-						done(err);
-					}else{
-						console.log('Good! Your credentials have been set up correctly.');
-						done();
-					}
-				});
-			});
-		});
-	}else{
-		done();
-	}
-};
