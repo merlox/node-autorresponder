@@ -23,7 +23,8 @@
    "bin": "server.js",
    "pkg": {
       "assets": [
-         "public/**/*"
+         "public/**/*",
+         "shell/**/*"
       ]
    }
 }
