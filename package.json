@@ -20,11 +20,11 @@
     "start": "SET NODE_ENV=dev && node server.js",
     "test": "mocha --timeout 10000"
   },
-   "bin": "server.js",
-   "pkg": {
-      "assets": [
-         "public/**/*",
-         "shell/**/*"
-      ]
-   }
+  "bin": "server.js",
+  "pkg": {
+    "assets": [
+      "public/**/*",
+      "shell/**/*"
+    ]
+  }
 }
