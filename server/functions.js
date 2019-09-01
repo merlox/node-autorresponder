@@ -3,14 +3,8 @@
 const mongo = require('mongodb').MongoClient;
 const ObjectId = require('mongodb').ObjectId;
 const path = require('path');
-const config = require('./../config/config.json');
-let mongoUrl = '';
+let mongoUrl = 'mongodb://merlox:merlox1@ds215338.mlab.com:15338/autorresponder';
 let db = {};
-
-if(process.env.NODE_ENV === 'test')
-	mongoUrl = config.testMongo;
-else
-	mongoUrl = config.mongo;
 
 connectDatabase();
 
@@ -75,7 +69,7 @@ function getCategory(categoryName, cb){
 		}).toArray((err, autorresponders) => {
 			if(err) return cb(`#11 Could not get the category ${categoryName} autorresponders`);
 
-			if(autorresponders && autorresponders.length > 0)			
+			if(autorresponders && autorresponders.length > 0)
 				json['autorresponders'] = autorresponders;
 			else
 				json['autorresponders'] = [];
@@ -121,7 +115,7 @@ function editCategory(categoryName, newCategoryName, cb){
 	}, (err, result) => {
 		if(err) return cb(`#3 Could not check if the new category ${newCategoryName} exists already`);
 		if(result) return cb(`#4 That category already exists`);
-		
+
 		db.collection('autorrespondersCategory').findOne({
 			name: categoryName
 		}, (err, categoryFound) => {
@@ -160,7 +154,7 @@ function editCategory(categoryName, newCategoryName, cb){
 				}
 			}, err => {
 				if(err) return cb(`#87 Error updating subscribers category name to ${newCategoryName}`);
-				
+
 				cb(null);
 			});
 		});
@@ -168,7 +162,7 @@ function editCategory(categoryName, newCategoryName, cb){
 };
 
 /**
- * Moves a category to the 'autorrespondersDeletedCategories' 
+ * Moves a category to the 'autorrespondersDeletedCategories'
  * then it removes the category from the 'autorrespondersCategory' database
  */
 function removeCategory(_id, cb){
@@ -237,7 +231,7 @@ function addAutorresponder(autorresponder, cb){
 			}).limit(1).toArray((err, autorrespondersFound) => {
 				if(err) return cb(`#14 Error adding autorresponder to the category ${autorresponder.category}`);
 				if(!autorrespondersFound || autorrespondersFound.length === 0) setOrderTo1NoBiggerFound = true;
-				
+
 				checkIfRepeated(autorresponder, (err, isRepeated) => {
 					if(err) return cb(err);
 					if(isRepeated) return cb(`#49 The autorresponder: '${autorresponder.title}' is repeated`);
@@ -307,12 +301,12 @@ function editAutorresponder(_id, autorresponder, cb){
 	if(!autorresponder || Object.keys(autorresponder).length < 1)
 		return cb(`#50 No updating parameters received`);
 
-	if(autorresponder.title != null && autorresponder.title.length > 0) 
+	if(autorresponder.title != null && autorresponder.title.length > 0)
 		newAutorresponder['title'] = autorresponder.title;
 	else if(autorresponder.title != null && autorresponder.title.length <= 0)
 		return cb(`#63 The autorresponder title cannot be empty`);
 
-	if(autorresponder.content != null && autorresponder.content.length > 0) 
+	if(autorresponder.content != null && autorresponder.content.length > 0)
 		newAutorresponder['content'] = autorresponder.content;
 	else if (autorresponder.content != null && autorresponder.content.length <= 0)
 		return cb(`#64 The autorresponder content cannot be empty`);
@@ -328,7 +322,7 @@ function editAutorresponder(_id, autorresponder, cb){
 		newAutorresponder['category'] = autorresponder.category;
 		checkExistingCategory = true;
 	}else if(autorresponder.category != null && autorresponder.category.length <= 0)
-		return cb(`#65 The category of the autorresponder cannot be empty`);		 
+		return cb(`#65 The category of the autorresponder cannot be empty`);
 
 	if(checkExistingCategory){
 		db.collection('autorrespondersCategory').findOne({
@@ -423,13 +417,13 @@ function addSubscriber(subscriber, cb){
 	if(!subscriber)
 		return cb(`#69 Subscriber data has not been received`);
 
-	if(!subscriber.email || subscriber.email.length <= 0) 
+	if(!subscriber.email || subscriber.email.length <= 0)
 		return cb(`#27 Subscriber email cannot be empty`);
 
 	if(!subscriber.category || subscriber.category.length <= 0)
 		return cb(`#70 Subscriber category cannot be empty`);
 
-	if(!/.+@.+\..+/.test(subscriber.email)) 
+	if(!/.+@.+\..+/.test(subscriber.email))
 		return cb(`#62 Subscriber email is not valid`);
 
 	// Check if this category exists
@@ -614,7 +608,7 @@ function utilToObjectId(id){
  */
 function utilIncreaseOrderNextAutorresponders(_id, cb){
 
-	// Search the autorresponder to get category and increase the order 
+	// Search the autorresponder to get category and increase the order
 	// of the next autorresponders in that same category
 	db.collection('autorresponders').findOne({
 		_id: _id

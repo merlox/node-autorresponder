@@ -7,6 +7,17 @@ const publicRoutes = require('./server/publicRoutes.js');
 const path = require('path');
 const fs = require('fs');
 const shell = require('./shell/shell.js');
+const yargs = require('yargs')
+const argv = yargs.option('port', {
+    alias: 'p',
+    description: 'Set the port to run this server on',
+    type: 'number',
+}).help().alias('help', 'h').argv
+if(!argv.port) {
+    console.log('Error, you need to pass the port you want to run this application on with npm start -- -p 8001')
+    process.exit(0)
+}
+const port = argv.port
 
 app.use('/autorresponder', express.static(path.join(__dirname, 'public/')));
 app.use(bodyParser.json());
@@ -26,18 +37,15 @@ app.use((req, res, next) => {
 	return res.status(404).send(`Cannot find ${req.originalUrl}`);
 });
 
-shell.checkArguments(err => {
-	if(err){
-		console.log(err);
-		process.exit(0);
-	}else{
-		let configJSON = fs.readFileSync(path.join(__dirname, 'config', 'config.json'), 'utf-8');
-		configJSON = JSON.parse(configJSON);
-
-		app.listen(configJSON.port, configJSON.ip, (req, res) => {
-			console.log(`Listening on ${configJSON.ip}:${configJSON.port}/autorresponder`);
+// shell.checkArguments(err => {
+// 	if(err){
+// 		console.log(err);
+// 		process.exit(0);
+// 	} else {
+		app.listen(port, '0.0.0.0', (req, res) => {
+			console.log(`Listening on localhost:${port}/autorresponder`);
 		});
-	}
-});
+// 	}
+// });
 
 module.exports = app;

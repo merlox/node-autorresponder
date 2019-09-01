@@ -83,75 +83,75 @@ echo Done, your autorresponder is now gone.`;
 module.exports = {
    checkArguments: function (cb){
 
-      let argumentIndex = process.argv.findIndex(e => {
-         return e.toLowerCase().includes('server');
-      }) + 1;
-
-      if(process.argv[argumentIndex]){
-         switch (process.argv[argumentIndex]) {
-            case 'configure':
-               require('./../config/configure.js').checkConfigUser(true, err => {
-                  if(err) return cb(err);
-                  cb(null);
-               });
-            break;
-
-            case 'install':
-               fs.writeFile('install.sh', installData, err => {
-                  if(err) console.log('Error writing the install file.');
-                  else console.log('Ok creating the install.sh file');
-
-                  exec.exec('sudo chmod +x install.sh', (err, stdout, stderr) => {
-                     if(err || stderr)
-                        console.log('Error giving execution permission for the install file');
-                     else
-                        console.log('Ok giving execution permission to the install.sh file');
-
-                     exec.exec('sudo ./install.sh', (err, stdout, stderr) => {
-                        console.log('ERR:');
-                        console.log(err);
-                        console.log('STDERR:');
-                        console.log(stderr);
-                        console.log('STDOUT:');
-                        console.log(stdout);
-
-                        cb(null);
-                     });
-                  });
-               });
-            break;
-
-            case 'uninstall':
-               fs.writeFile('uninstall.sh', uninstallData, err => {
-                  if(err) console.log('Error writing the uninstall file.');
-
-                  exec.exec('sudo chmod +x uninstall.sh', (err, stdout, stderr) => {
-                     if(err || stderr) console.log('Error giving execution permission for the install file');
-                     else console.log('Ok giving execution permission to the install.sh file');
-
-                     exec.exec('sudo ./uninstall.sh', (err, stdout, stderr) => {
-                        console.log('ERR:');
-                        console.log(err);
-                        console.log('STDERR:');
-                        console.log(stderr);
-                        console.log('STDOUT:');
-                        console.log(stdout);
-
-                        cb(null);
-                     });
-                  });
-               });
-            break;
-
-            default:
-               require('./../config/configure.js').checkConfigUser(false, err => {
-                  if(err) return cb(err);
-                  cb(null);
-               });
-            break;
-         }
-      }else{
-         cb(null);
-      }
+   //    let argumentIndex = process.argv.findIndex(e => {
+   //       return e.toLowerCase().includes('server');
+   //    }) + 1;
+   //
+   //    if(process.argv[argumentIndex]){
+   //       switch (process.argv[argumentIndex]) {
+   //          case 'configure':
+   //             require('./../config/configure.js').checkConfigUser(true, err => {
+   //                if(err) return cb(err);
+   //                cb(null);
+   //             });
+   //          break;
+   //
+   //          case 'install':
+   //             fs.writeFile('install.sh', installData, err => {
+   //                if(err) console.log('Error writing the install file.');
+   //                else console.log('Ok creating the install.sh file');
+   //
+   //                exec.exec('sudo chmod +x install.sh', (err, stdout, stderr) => {
+   //                   if(err || stderr)
+   //                      console.log('Error giving execution permission for the install file');
+   //                   else
+   //                      console.log('Ok giving execution permission to the install.sh file');
+   //
+   //                   exec.exec('sudo ./install.sh', (err, stdout, stderr) => {
+   //                      console.log('ERR:');
+   //                      console.log(err);
+   //                      console.log('STDERR:');
+   //                      console.log(stderr);
+   //                      console.log('STDOUT:');
+   //                      console.log(stdout);
+   //
+   //                      cb(null);
+   //                   });
+   //                });
+   //             });
+   //          break;
+   //
+   //          case 'uninstall':
+   //             fs.writeFile('uninstall.sh', uninstallData, err => {
+   //                if(err) console.log('Error writing the uninstall file.');
+   //
+   //                exec.exec('sudo chmod +x uninstall.sh', (err, stdout, stderr) => {
+   //                   if(err || stderr) console.log('Error giving execution permission for the install file');
+   //                   else console.log('Ok giving execution permission to the install.sh file');
+   //
+   //                   exec.exec('sudo ./uninstall.sh', (err, stdout, stderr) => {
+   //                      console.log('ERR:');
+   //                      console.log(err);
+   //                      console.log('STDERR:');
+   //                      console.log(stderr);
+   //                      console.log('STDOUT:');
+   //                      console.log(stdout);
+   //
+   //                      cb(null);
+   //                   });
+   //                });
+   //             });
+   //          break;
+   //
+   //          default:
+   //             require('./../config/configure.js').checkConfigUser(false, err => {
+   //                if(err) return cb(err);
+   //                cb(null);
+   //             });
+   //          break;
+   //       }
+   //    }else{
+   //       cb(null);
+   //    }
    }
 };
